@@ -61,7 +61,12 @@ class WxSDK{
 	public function getRespXML($array) {
 		$xmlObj = new SimpleXMLElement("<xml></xml>");
 
-		print_r($xmlObj);
+		foreach ($array as $key => $value) {
+			$xmlObj->addChild($key, $value);
+		}
+			
+		$xmlString = $xmlObj->asXML();
+		return $xmlString;
 	}
 
 	//用于开发者模式下校验来自公众平台的token参数
