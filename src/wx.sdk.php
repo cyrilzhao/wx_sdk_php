@@ -1,11 +1,18 @@
 <?php
 
+header("Content-Type: text/html; charset=utf-8");
+
 /**
  * 微信第三方接口SDK
- * @author raphealguo
+ * @author raphealguo cyrilzhao
  */
 class WxSDKException extends Exception {
 	public function __construct($msg = 'WxSDKException'){
+		$this->msg = $msg;
+	}
+
+	public function getErrorMsg() {
+		return $this->msg;	
 	}
 }
 
@@ -148,6 +155,7 @@ class WxSDK{
 		curl_setopt($ci, CURLINFO_HEADER_OUT, TRUE );
 
 		$response = curl_exec($ci);
+
 		$this->http_code = curl_getinfo($ci, CURLINFO_HTTP_CODE);
 		$this->http_info = array_merge($this->http_info, curl_getinfo($ci));
 		$this->url = $url;
@@ -156,33 +164,49 @@ class WxSDK{
 		return $response;
 	}
 
-	function do_request($cgi, $method, $parameters, $multi = false) {
+	function do_request($cgi, $method, $params, $multi = false) {
 
 		if (strrpos($cgi, 'https://') !== 0 && strrpos($cgi, 'https://') !== 0) {
 			$cgi = "{$this->host}{$cgi}";
 		}
 
-		switch ($method) {
+		switch (strtoupper($method)) {
 			case 'GET':
-				$cgi = $cgi . '?' . http_build_query($parameters);
+				$cgi = $cgi . '?' . http_build_query($params);
 				return $this->http_send($cgi, 'GET');
-			default:
+			case 'POST':
 				$headers = array();
-				if (!$multi){
-					if ((is_array($parameters) || is_object($parameters)) ) {
-						$body = http_build_query($parameters);
-					}else{
-						$body = $parameters;
+				if (!$multi) {
+					if ((is_array($params) || is_object($params)) ) {
+						$body = $params;
+					} else {
+						$body = $params;
 					}
 				} else {
-					$body = self::build_http_query_multi($parameters);
+					$body = self::build_http_query_multi($params);
 					$headers[] = "Content-Type: multipart/form-data; boundary=" . self::$boundary;
 				}
 				return $this->http_send($cgi, $method, $body, $headers);
+			default:
+				$body = array();
+				$headers = array();
+				if (!$multi) {
+					if (isset($params["post"]) && (is_array($params["post"]) || is_object($params["post"]))) {
+						$body = http_build_query($params["post"]);
+					} else {
+						$body = $params["post"];
+					}
+				} else {
+					$body = self::build_http_query_multi($params["post"]);
+					$headers[] = "Content-Type: multipart/form-data; boundary=" . self::$boundary;
+				}
+				$cgi = $cgi . '?' . http_build_query($params["get"]);
+				return $this->http_send($cgi, "POST", $body, $headers);
 		}
 	}
 	function get($url, $parameters = array(), $format = 'json') {
 		$resp = $this->do_request($url, 'GET', $parameters);
+
 		if ($format === 'json') {
 			return json_decode($resp, true);
 		}
@@ -190,12 +214,12 @@ class WxSDK{
 	}
 
 	/**
-	 * POST wreapper for oAuthRequest.
+	 * POST wrapper for oAuthRequest.
 	 *
 	 * @return mixed
 	 */
 	function post($url, $parameters = array(), $multi = false, $format = 'json') {
-		$resp = $this->do_request($url, 'POST', $parameters, $multi );
+		$resp = $this->do_request($url, 'POST', $parameters, $multi);
 
 		if ($format === 'json') {
 			return json_decode($resp, true);
@@ -203,18 +227,23 @@ class WxSDK{
 		return $resp;
 	}
 
-	private static function _inner_resp_cb($resp, $excepition_msg){
+	private static function _check_resp_cb($resp, $excepition_msg){
 		if (is_array($resp) && isset($resp['errcode']) && $resp['errcode'] == 0) {
 			return $resp;
 		} else {
-			throw new WxSDKException($excepition_msg . " msg : " . $resp['errmsg'], ' code :' . $resp['errcode']);
+			throw new WxSDKException($excepition_msg . " msg : " . $resp['errmsg']. ', errorCode :' . $resp['errcode']);
 		}
 	}
-	private static function _inner_resp_cb_without_errcode($resp, $excepition_msg){
-		if (is_array($resp) && !isset($resp['errcode'])) {
-			return $resp;
-		} else {
-			throw new WxSDKException($excepition_msg . " msg : " . $resp['errmsg'], ' code :' . $resp['errcode']);
+	private static function _check_resp_cb_without_errcode($resp, $excepition_msg){
+		try {
+			if (is_array($resp) && !isset($resp['errcode'])) {
+				return $resp;
+			} else {
+				throw new WxSDKException($excepition_msg . " => message: " . $resp['errmsg']. ', errorCode :' . $resp['errcode']);
+			}
+		} catch (WxSDKException $e) {
+			echo $e->getErrorMsg();
+			return false;
 		}
 	}
 
@@ -226,14 +255,110 @@ class WxSDK{
 		$params['secret'] = $this->secret;
 
 		$resp = $this->get('token', $params);
-		//var_dump($token);
-		$resp = self::_inner_resp_cb_without_errcode($resp, 'get_access_token');
+		$resp = self::_check_resp_cb_without_errcode($resp, 'get_access_token');
+
+		if($resp === false) 
+			return false;
+
 		$this->access_token = $resp['access_token'];
 		$this->expires_in = $resp['expires_in'];
 
 		return $resp;
 	}
+
+	// 下载多媒体文件
+	public function get_media($media_id) {
+		$params = array();
+		$params["access_token"] = $this->access_token;
+		$params["media_id"] = $media_id;
+
+		$resp = $this->get("media/get", $params);
+		$resp = self::_check_resp_cb_without_errcode($resp, 'get_access_token');
+
+		return $resp;
+	}
+
+	// 查询分组
+	public function get_groups() {
+		$params = array();
+		$params["access_token"] = $this->access_token;
+
+		$resp = $this->get("groups/get", $params);
+		$resp = self::_check_resp_cb_without_errcode($resp, 'get_groups');
+
+		return $resp;
+	}
+
+	// 创建分组
+	public function create_group($group_name) {
+		$params = array();
+		$params["group"] = array();
+		$params["group"]["name"] = $group_name;
+		$params_json_str = self::_replace_unicode(json_encode($params));
+
+		$access_token = $this->access_token;
+		$resp = $this->post("groups/create?access_token={$access_token}", $params_json_str);
+		$resp = self::_check_resp_cb_without_errcode($resp, "create_group");
+
+		return $resp;
+	}
+
+	// 修改分组名
+	public function update_group($group_id, $group_name) {
+		$params = array();
+		$params["group"] = array();
+		$params["group"]["id"] = $group_id;
+		$params["group"]["name"] = $group_name;
+		$params_json_str = self::_replace_unicode(json_encode($params));
+
+		$access_token = $this->access_token;
+		$resp = $this->post("groups/update?access_token={$access_token}", $params_json_str);
+		$resp = self::_check_resp_cb($resp, "update_group");
+
+		return $resp;
+	}
 	
+	// 移动用户分组
+	public function update_group_of_user($openid, $to_groupid) {
+		$params = array();
+		$params["openid"] = $openid;
+		$params["to_groupid"] = $to_groupid;
+		$params_json_str = self::_replace_unicode(json_encode($params));
+
+		$access_token = $this->access_token;
+		$resp = $this->post("groups/members/update?access_token={$access_token}", $params_json_str);
+		$resp = self::_check_resp_cb($resp, "update_group_of_user");
+
+		return $resp;
+	}
+
+	// 获取用户基本信息
+	public function get_user_info($openid) {
+		$params = array();
+		$params["openid"] = $openid;
+		$params["access_token"] = $this->access_token;
+
+		$resp = $this->get('user/info', $params);
+		$resp = self::_check_resp_cb_without_errcode($resp, 'get_user_info');
+
+		return $resp;
+	}
+
+	// 获取关注者列表
+	public function get_user_list($next_openid = NULL) {
+		$params = array();
+		$params["next_openid"] = $next_openid;
+		$params["access_token"] = $this->access_token;
+
+		$resp = $this->get("user/get", $params);
+		$resp = self::_check_resp_cb_without_errcode($resp, 'get_user_list');
+
+		return $resp;
+	}
+
+	// 获取用户地理位置
+	public function 
+
 	//自定义菜单接口封装
 	//自定义菜单创建
 	/**
@@ -264,7 +389,7 @@ class WxSDK{
 			throw new WxSDKException("access_token null");
 		}
 		$resp = $this->post("menu/create?access_token={$access_token}", $menu_json_str);
-		return self::_inner_resp_cb($resp, "create_menu failed.");
+		return self::_check_resp_cb($resp, "create_menu failed.");
 	}
 
 	//自定义菜单删除
@@ -280,12 +405,12 @@ class WxSDK{
 			throw new WxSDKException("access_token null");
 		}
 		$resp = $this->get("menu/delete", array("access_token"=>$access_token));
-		return self::_inner_resp_cb($resp, "del_menu failed.");
+		return self::_check_resp_cb($resp, "del_menu failed.");
 	}
 
 	//获取自定义菜单
 	/**
-	 * DEMO
+	 *  DEMO
 	 *	$sdk = new WxSDK('YOUR APPID', 'YOUR SECRET');
 	 *	$resp = $sdk->get_menu();
 	 *
@@ -297,7 +422,7 @@ class WxSDK{
 		}
 		$resp = $this->get("menu/get", array("access_token"=>$access_token));
 		var_dump($resp);
-		return self::_inner_resp_cb($resp, "get_menu failed.");
+		return self::_check_resp_cb($resp, "get_menu failed.");
 	}
 
 	//获取永久二维码图片的URL
@@ -306,8 +431,7 @@ class WxSDK{
 		$qrcode_json_str = self::_replace_unicode(json_encode($qrcode_arr));
 
 		$resp = $this->post("qrcode/create?access_token={$access_token}", $qrcode_json_str);
-		var_dump($resp);
-		$resp = self::_inner_resp_cb_without_errcode($resp, "get_qr_code failed.");
+		$resp = self::_check_resp_cb_without_errcode($resp, "get_qr_code failed.");
 
 		$ticket = $resp['ticket'];
 		return array(
