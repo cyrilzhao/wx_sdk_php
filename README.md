@@ -7,18 +7,23 @@ mp.weixin.qq.com/wiki
 ========
 ### 创建自定义菜单
 
-$sdk = new WxSDK('YOUR APPID', 'YOUR SECRET');
-$resp = $sdk->create_menu(
-	array(
+	$sdk = new WxSDK('YOUR APPID', 'YOUR SECRET');
+	$resp = $sdk->create_menu(
 		array(
-			"type" => "click",
-			"name" => "今日歌曲",
-			"key" => "V1001_TODAY_MUSIC"
-		),
-		array(
-			"type" => "view",
-			"name" => "跳转",
-			"url" => "http://www.qq.com",
+			array(
+				"type" => "click",
+				"name" => "今日歌曲",
+				"key" => "V1001_TODAY_MUSIC"
+			),
+			array(
+				"type" => "view",
+				"name" => "跳转",
+				"url" => "http://www.qq.com",
+			)
 		)
-	)
-);
+	);
+
+### 删除自定义菜单
+
+	$sdk = new WxSDK('YOUR APPID', 'YOUR SECRET');
+	$resp = $sdk->delete_menu();
