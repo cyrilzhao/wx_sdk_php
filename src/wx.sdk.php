@@ -45,6 +45,25 @@ class WxSDK{
 		$this->get_access_token();
 	}
 
+	public function parseRespXML($xmlString) {
+		$result = array();
+
+		$xml = new SimpleXMLElement($xmlString);
+
+		$xmlString = preg_replace("/\<\!\[CDATA\[(.*?)\]\]\>/ies", "'[CDATA]'.base64_encode('$1').'[/CDATA]'", $xmlString);
+		foreach ($xml->children() as $key => $value) {
+			$result[$key] = preg_replace("/\[CDATA\](.*?)\[\/CDATA\]/ies", "base64_decode('$1')", $value);
+		}
+
+		return $result;
+	}
+
+	public function getRespXML($array) {
+		$xmlObj = new SimpleXMLElement("<xml></xml>");
+
+		print_r($xmlObj);
+	}
+
 	//用于开发者模式下校验来自公众平台的token参数
 	private function _checkSignature($signature, $timestamp, $nonce, $token){
 		$tmpArr = array($token, $timestamp, $nonce);
@@ -357,28 +376,9 @@ class WxSDK{
 	}
 
 	// 获取用户地理位置
-	
 
-	//自定义菜单创建
-	/**
-	 * DEMO
-	 *	$sdk = new WxSDK('YOUR APPID', 'YOUR SECRET');
-	 *	$resp = $sdk->create_menu(
-	 *		array(
-	 *			array(
-	 *				"type" => "click",
-	 *				"name" => "今日歌曲",
-	 *				"key" => "V1001_TODAY_MUSIC",
-	 *			),
-	 *			array(
-	 *				"type" => "view",
-	 *				"name" => "跳转",
-	 *				"url" => "http://www.qq.com",
-	 *			)
-	 *		)
-	 *	);
-	 *
-	 */
+
+	// 创建自定义菜单
 	public function create_menu($menu_arr){
 		$menu_json_str = self::_replace_unicode(json_encode(array("button"=>$menu_arr)));
 
@@ -390,13 +390,7 @@ class WxSDK{
 		return self::_check_resp_cb($resp, "create_menu failed.");
 	}
 
-	//自定义菜单删除
-	/**
-	 * DEMO
-	 *	$sdk = new WxSDK('YOUR APPID', 'YOUR SECRET');
-	 *	$resp = $sdk->delete_menu();
-	 *
-	 */
+	// 删除自定义菜单
 	public function delete_menu(){
 		$access_token = $this->access_token;
 		if (!$access_token){
@@ -406,24 +400,17 @@ class WxSDK{
 		return self::_check_resp_cb($resp, "delete_menu failed.");
 	}
 
-	//获取自定义菜单
-	/**
-	 *  DEMO
-	 *	$sdk = new WxSDK('YOUR APPID', 'YOUR SECRET');
-	 *	$resp = $sdk->get_menu();
-	 *
-	 */
+	// 获取自定义菜单
 	public function get_menu(){
 		$access_token = $this->access_token;
 		if (!$access_token){
 			throw new WxSDKException("access_token null");
 		}
 		$resp = $this->get("menu/get", array("access_token"=>$access_token));
-		var_dump($resp);
 		return self::_check_resp_cb($resp, "get_menu failed.");
 	}
 
-	//获取永久二维码图片的URL
+	// 获取带参数永久二维码图片的ticket
 	public function get_qr_code($qrcode_arr){
 		$access_token = $this->access_token;
 		$qrcode_json_str = self::_replace_unicode(json_encode($qrcode_arr));
@@ -431,10 +418,6 @@ class WxSDK{
 		$resp = $this->post("qrcode/create?access_token={$access_token}", $qrcode_json_str);
 		$resp = self::_check_resp_cb_without_errcode($resp, "get_qr_code failed.");
 
-		$ticket = $resp['ticket'];
-		return array(
-			'resp' => $resp,
-			"url" => "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket={$ticket}"
-		);
+		return $resp;
 	}
 }
