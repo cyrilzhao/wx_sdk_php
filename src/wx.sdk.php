@@ -357,28 +357,26 @@ class WxSDK{
 	}
 
 	// 获取用户地理位置
-	public function 
+	
 
-	//自定义菜单接口封装
 	//自定义菜单创建
 	/**
 	 * DEMO
 	 *	$sdk = new WxSDK('YOUR APPID', 'YOUR SECRET');
 	 *	$resp = $sdk->create_menu(
 	 *		array(
-	 *				array(
-	 *						"type" => "click",
-	 *						"name" => "今aa日歌曲1",
-	 *						"key" => "V1001_TODAY_MUSIC",
-	 *					),
-	 *
-	 *				array(
-	 *						"type" => "view",
-	 *						"name" => "跳v1转2",
-	 *						"url" => "http://www.qq.com",
-	 *					)
+	 *			array(
+	 *				"type" => "click",
+	 *				"name" => "今日歌曲",
+	 *				"key" => "V1001_TODAY_MUSIC",
+	 *			),
+	 *			array(
+	 *				"type" => "view",
+	 *				"name" => "跳转",
+	 *				"url" => "http://www.qq.com",
 	 *			)
-	 *		);
+	 *		)
+	 *	);
 	 *
 	 */
 	public function create_menu($menu_arr){
@@ -396,16 +394,16 @@ class WxSDK{
 	/**
 	 * DEMO
 	 *	$sdk = new WxSDK('YOUR APPID', 'YOUR SECRET');
-	 *	$resp = $sdk->del_menu();
+	 *	$resp = $sdk->delete_menu();
 	 *
 	 */
-	public function del_menu(){
+	public function delete_menu(){
 		$access_token = $this->access_token;
 		if (!$access_token){
 			throw new WxSDKException("access_token null");
 		}
 		$resp = $this->get("menu/delete", array("access_token"=>$access_token));
-		return self::_check_resp_cb($resp, "del_menu failed.");
+		return self::_check_resp_cb($resp, "delete_menu failed.");
 	}
 
 	//获取自定义菜单
