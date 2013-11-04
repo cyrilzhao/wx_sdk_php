@@ -10,7 +10,7 @@ $sdk = new WxSDK('wx1bc509d4d039b25a', '9d513ee452109a3b03630334aea45006');
 // print_r($groups);
 
 // 创建分组
-// $resp = $sdk->create_group("cycy");
+// $resp = $sdk->create_group("cyril");
 // print_r($resp);
 
 // 修改分组名
@@ -18,11 +18,11 @@ $sdk = new WxSDK('wx1bc509d4d039b25a', '9d513ee452109a3b03630334aea45006');
 // print_r($resp);
 
 // 移动用户分组
-// $resp = $sdk->move_user_in_group();
+// $resp = $sdk->update_group_of_user($openid, $to_groupid);
 // print_r($resp);
 
 // 获取用户基本信息
-// $resp = $sdk->get_user_info("omN7ljkwaz2AdN9bSU0Vz9XsxGY0");
+// $resp = $sdk->get_user_info($openid);
 // print_r($resp);
 
 // 获取关注者列表

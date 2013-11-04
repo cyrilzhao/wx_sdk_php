@@ -5,39 +5,37 @@ mp.weixin.qq.com/wiki
 
 使用示例
 ========
+### 实例化SDK对象
+	
+	define('TOKEN', 'test');	// 这里的TOKEN由用户自行决定并填写，且应与在公众平台开发者页面填写的token保持一致
+	$sdk = new WxSDK($appid, $secret);
+
 ### 查询分组
 	
-	$sdk = new WxSDK($appid, $secret);
 	$groups = $sdk->get_groups();
 
 ### 创建分组
 	
-	$sdk = new WxSDK($appid, $secret);
 	$resp = $sdk->create_group($group_name);
 
 ### 修改分组名
 	
-	$sdk = new WxSDK($appid, $secret);
 	$resp = $sdk->update_group($group_id, $group_name);
 
 ### 移动用户分组
 	
-	$sdk = new WxSDK($appid, $secret);
 	$resp = $sdk->update_group_of_user($openid, $to_groupid);
 
 ### 获取用户基本信息
 	
-	$sdk = new WxSDK($appid, $secret);
 	$resp = $sdk->get_user_info($openid);
 
 ### 获取关注者列表
 	
-	$sdk = new WxSDK($appid, $secret);
 	$resp = $sdk->get_user_list();
 
 ### 创建自定义菜单
 
-	$sdk = new WxSDK($appid, $secret);
 	$resp = $sdk->create_menu(
 		array(
 			array(
@@ -55,10 +53,8 @@ mp.weixin.qq.com/wiki
 
 ### 删除自定义菜单
 
-	$sdk = new WxSDK($appid, $secret);
 	$resp = $sdk->delete_menu();
 
 ### 获取自定义菜单
 	
-	$sdk = new WxSDK($appid, $secret);
 	$resp = $sdk->get_menu();
