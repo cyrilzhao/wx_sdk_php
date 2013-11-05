@@ -1,7 +1,5 @@
 <?php
 
-header("Content-Type: text/html; charset=utf-8");
-
 class WxSDKException extends Exception {
 	public function __construct($msg = 'WxSDKException'){
 		$this->msg = $msg;
@@ -13,7 +11,7 @@ class WxSDKException extends Exception {
 }
 
 /**
- * 微信第三方接口SDK
+ * 微信公众平台第三方接口SDK
  * @author raphealguo cyrilzhao
  */
 class WxSDK{
@@ -405,7 +403,7 @@ class WxSDK{
 		$params["Articles"] = $articleStr;
 
 		$xmlString = $this->getRespXML($params);
-		echo $xmlString;
+		var_dump($xmlString);
 	}
 
 	// 将客服消息推送到微信服务器

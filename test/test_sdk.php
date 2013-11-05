@@ -130,10 +130,10 @@ $sdk = new WxSDK('wx1bc509d4d039b25a', '9d513ee452109a3b03630334aea45006');
 // var_dump($resp);
 
 // 通过ticket换取二维码图片url
-$ticket = "gQH47zoAAAAAAAAAASxodHRwOi8vd2VpeGluLnFxLmNvbS9xL2UzVjRmanprc21MTGdqTlJqVnRjAAIEjdh4UgMECAcAAA==";
-$resp = $sdk->get_qr_code_url($ticket);
-echo '<img src="' . $resp . '" />';
-var_dump($resp);
+// $ticket = "gQH47zoAAAAAAAAAASxodHRwOi8vd2VpeGluLnFxLmNvbS9xL2UzVjRmanprc21MTGdqTlJqVnRjAAIEjdh4UgMECAcAAA==";
+// $resp = $sdk->get_qr_code_url($ticket);
+// echo '<img src="' . $resp . '" />';
+// var_dump($resp);
 
 // 被动回复文字消息
 // $sdk->send_callback_text_message("cyrilzhao", "zhaojian", "hello");
@@ -141,22 +141,21 @@ var_dump($resp);
 // 被动回复图片消息
 // $sdk->send_callback_image_message("cyrilzhao", "zhaojian", "jmpBeA3AnEcKE0n8cd8ziYf2OUDh4xxw56tzeik-iJyGJOeTbHuzx0R7YLim7GMj");
 
-
 // 被动回复图文消息
-// $articles = array(
-// 	array(
-// 		"Title" => "title1",
-// 		"Description" => "description1",
-// 		"PicUrl" => "1.jpg",
-// 		"Url" => "www.google.com"
-// 	),
-// 	array(
-// 		"Title" => "title1",
-// 		"Description" => "description1",
-// 		"PicUrl" => "2.jpg",
-// 		"Url" => "www.qq.com"
-// 	)
-// );
-// $sdk->send_callback_news_message("cyrilzhao", "zhaojian", 2, $articles);
+$articles = array(
+	array(
+		"Title" => "title1",
+		"Description" => "description1",
+		"PicUrl" => "1.jpg",
+		"Url" => "www.google.com"
+	),
+	array(
+		"Title" => "title1",
+		"Description" => "description1",
+		"PicUrl" => "2.jpg",
+		"Url" => "www.qq.com"
+	)
+);
+$sdk->send_callback_news_message("cyrilzhao", "zhaojian", 2, $articles);
 
 

@@ -17,115 +17,208 @@ $sdk = new WxSDK($appid, $secret);
 ```php
 // absolute_file_path一定要是文件的绝对路径，文件类型type的可选项有image,voice,video和thumb
 $resp = $sdk->upload_media($absolute_file_path, $type);
-/* 
-	调用成功返回结果：
-	$resp => array(
-	  	'type' => string 'image' 
-	  	'media_id' => string 'xxx' 
-	  	'created_at' => int xxx
-	)
-*/
+/** 
+ *	调用成功返回结果：
+ *	$resp => array(
+ *	  	'type' => string 'image' 
+ *	  	'media_id' => string 'xxx' 
+ *	  	'created_at' => int xxx
+ *	)
+ */
+```
+
+### 被动回复文字消息
+```php
+$sdk->send_callback_text_message($fromuser_openid, $touser_openid, $content);
+```
+
+### 被动回复图片消息
+```php
+$sdk->send_callback_image_message($fromuser_openid, $touser_openid, $media_id);
+```
+
+### 被动回复语音消息
+```php
+$sdk->send_callback_voice_message($touser_openid, $fromuser_openid, $media_id);
+```
+
+### 被动回复视频消息
+```php
+$sdk->send_callback_video_message($touser_openid, $fromuser_openid, $media_id, $thumb_media_id);
+```
+
+### 被动回复音乐消息
+```php
+$sdk->send_callback_image_message($fromuser_openid, $touser_openid, $media_id);
+```
+
+### 被动回复图文消息
+```php
+/**
+ *  参数$articles的形式如下：
+ * 	$articles = array(
+ * 		array(
+ * 			"Title" => "title1",
+ * 			"Description" => "description1",
+ * 			"PicUrl" => "1.jpg",
+ * 			"Url" => "www.google.com"
+ * 		),
+ * 		array(
+ * 			"Title" => "title1",
+ * 			"Description" => "description1",
+ * 			"PicUrl" => "2.jpg",
+ * 			"Url" => "www.qq.com"
+ * 		)
+ * 	);
+ */
+$sdk->send_callback_news_message($touser_openid, $fromuser_openid, $articleCount, $articles);
+```
+
+### 发送客服文字消息
+```php
+$sdk->send_custom_text_message($touser_openid, $content);
+```
+
+### 发送客服图片消息
+```php
+$sdk->send_custom_image_message($touser_openid, $media_id);
+```
+
+### 发送客服语音消息
+```php
+$sdk->send_custom_voice_message($touser_openid, $media_id);
+```
+
+### 发送客服视频消息
+```php
+$sdk->send_custom_video_message($touser_openid, $media_id, $thumb_media_id);
+```
+
+### 发送客服音乐消息
+```php
+$sdk->send_custom_music_message($touser_openid, $music_title, $music_url, $description, $hqmusicurl, $thumb_media_id);
+```
+
+### 发送客服图文消息
+```php
+/**
+ * 参数$articlesArray的形式如下：
+ * 
+ *  array(
+ *  	"title" => "Happy Day",
+ *   	"description" => "Is Really A Happy Day",
+ *   	"url" => "URL",
+ *   	"picurl" => "PIC_URL"
+ *  ),
+ *  array(
+ *      "title" => "Happy Day",
+ *   	"description" => "Is Really A Happy Day",
+ *   	"url" => "URL",
+ *   	"picurl" => "PIC_URL"
+ *  )
+ */
+$sdk->send_custom_news_message($articlesArray);
 ```
 
 ### 查询分组
 ```php
 $groups = $sdk->get_groups();
-/* 
-	调用成功返回结果：
-	$resp => Array (
-	    [groups] => Array (
-            [0] => Array (
-                [id] => 0
-                [name] => 未分组
-                [count] => 132
-            ),
-            [1] => Array (
-                [id] => 1
-                [name] => 黑名单
-                [count] => 0
-            ),
-            ...
-        )
-    )
-*/
+/** 
+ *	调用成功返回结果：
+ *	$resp => Array (
+ *	    [groups] => Array (
+ *          [0] => Array (
+ *              [id] => 0
+ *              [name] => 未分组
+ *              [count] => 132
+ *          ),
+ *          [1] => Array (
+ *              [id] => 1
+ *              [name] => 黑名单
+ *              [count] => 0
+ *          ),
+ *          ...
+ *      )
+ *  )
+ */
 ```
 
 ### 创建分组
 ```php
 $resp = $sdk->create_group($group_name);
-/* 
-	调用成功返回结果：
-	$resp => array (
-  		'group' => array (
-      		'id' => int xxx
-      		'name' => string 'xxx' 
-		)
-	)
-*/
+/** 
+ *	调用成功返回结果：
+ *	$resp => array (
+ *		'group' => array (
+ *    		'id' => int xxx
+ *    		'name' => string 'xxx' 
+ *		) 
+ *	)
+ */
 
 ```
 
 ### 修改分组名
 ```php
 $resp = $sdk->update_group($group_id, $group_name);
-/* 
-	调用成功返回结果：
-	$resp => array (
-  		'errcode' => int 0
-  		'errmsg' => string 'ok'
-  	)
-*/
+/**
+ *	调用成功返回结果：
+ *	$resp => array (
+ *		'errcode' => int 0
+ *		'errmsg' => string 'ok'
+ *	)
+ */
 ```
 
 ### 移动用户分组
 ```php
 $resp = $sdk->update_group_of_user($openid, $to_groupid);
-/* 
-	调用成功返回结果：
-	$resp => array (
-		'errcode' => int 0
-		'errmsg' => string 'ok' 
-	)
-*/
+/**
+ *	调用成功返回结果：
+ *	$resp => array ( 
+ *		'errcode' => int 0
+ *		'errmsg' => string 'ok' 
+ *	)
+ */
 ```
 
 ### 获取用户基本信息
 ```php
 $resp = $sdk->get_user_info($openid);
-/* 
-	调用成功返回结果：
-	$resp => array (
-		'subscribe' => int 1
-		'openid' => string 'xxx' 
-		'nickname' => string 'xxx' 
-		'sex' => int xxx
-		'language' => string 'xxx' 
-		'city' => string '' 
-		'province' => string 'xxx'
-		'country' => string 'xxx' 
-		'headimgurl' => string 'xxx' 
-		'subscribe_time' => int xxx
-	)
-*/
+/** 
+ *	调用成功返回结果： 
+ *	$resp => array (
+ *		'subscribe' => int 1
+ *		'openid' => string 'xxx' 
+ *		'nickname' => string 'xxx' 
+ *		'sex' => int xxx
+ *		'language' => string 'xxx' 
+ *		'city' => string '' 
+ *		'province' => string 'xxx'
+ *		'country' => string 'xxx' 
+ *		'headimgurl' => string 'xxx' 
+ *		'subscribe_time' => int xxx
+ *	)
+ */
 ```
 
 ### 获取关注者列表
 ```php
 $resp = $sdk->get_user_list();
-/* 
-	调用成功返回结果：
-	$resp => Array (
-	    'total' => int 151
-	    'count' => int 151
-	    'data' => array (
-            'openid' => Array (
-                0 => string omN7ljkwaz2AdN9bSU0Vz9XsxGY0
-                1 => string omN7ljkj3bk0VJ03UxQBkLmNIX-U
-                ...
-            )
-        )
-    )
-*/
+/** 
+ *	调用成功返回结果：
+ *	$resp => Array ( 
+ *	    'total' => int 151
+ *	    'count' => int 151
+ *	    'data' => array (
+ *          'openid' => Array (
+ *              0 => string omN7ljkwaz2AdN9bSU0Vz9XsxGY0
+ *              1 => string omN7ljkj3bk0VJ03UxQBkLmNIX-U
+ *              ...
+ *          )
+ *      )
+ *  )
+ */
 
 ```
 
@@ -162,97 +255,97 @@ $resp = $sdk->create_menu(
 		)
 	)
 );
-/* 
-	调用成功返回结果：
-	$resp => array (
-  		'errcode' => int 0
-  		'errmsg' => string 'ok'
-  	)
-*/
+/**
+ *	调用成功返回结果：
+ *	$resp => array (
+ *		'errcode' => int 0
+ *		'errmsg' => string 'ok'
+ *	)
+ */
 
 ```
 
 ### 删除自定义菜单
 ```php
 $resp = $sdk->delete_menu();
-/* 
-	调用成功返回结果：
-	$resp => array (
-  		'errcode' => int 0
-  		'errmsg' => string 'ok' 
-  	)
-*/
+/** 
+ *	调用成功返回结果：
+ *	$resp => array (
+ *		'errcode' => int 0
+ *		'errmsg' => string 'ok' 
+ *	)
+ */
 ```
 
 ### 获取自定义菜单
 ```php	
 $resp = $sdk->get_menu();
-/* 
-	调用成功返回结果：
-	$resp => Array (
-	    [menu] => Array (
-	        [button] => Array (
-                [0] => Array (
-                    [type] => click
-                    [name] => 今日歌曲
-                    [key] => V1001_TODAY_MUSIC
-                    [sub_button] => Array () // 注意这里会多出一个空的sub_button数组
-                )
-                [1] => Array (
-                    [type] => view
-                    [name] => 跳转
-                    [url] => http://www.qq.com
-                    [sub_button] => Array ()
-                )
-                [2] => Array (
-	                [name] => 菜单
-	                [sub_button] => Array (
-                        [0] => Array (
-                            [type] => view
-                            [name] => 搜索
-                            [url] => http://www.soso.com/
-                            [sub_button] => Array ()
-                        )
-                        [1] => Array (
-                            [type] => view
-                            [name] => 视频
-                            [url] => http://v.qq.com/
-                            [sub_button] => Array ()
-                        )
-                        [2] => Array (
-                            [type] => click
-                            [name] => 赞一下我们
-                            [key] => V1001_GOOD
-                            [sub_button] => Array ()
-						)
-	                )
-	            )
-	        )
-	    )
-	)
-*/
+/**
+ *	调用成功返回结果：
+ *	$resp => Array (
+ *	    [menu] => Array (
+ *	        [button] => Array (
+ *              [0] => Array (
+ *                  [type] => click
+ *                  [name] => 今日歌曲
+ *                  [key] => V1001_TODAY_MUSIC
+ *                  [sub_button] => Array () // 注意这里会多出一个空的sub_button数组
+ *              )
+ *              [1] => Array (
+ *                  [type] => view
+ *                  [name] => 跳转
+ *                  [url] => http://www.qq.com
+ *                  [sub_button] => Array ()
+ *              )
+ *              [2] => Array (
+ *	                [name] => 菜单
+ *	                [sub_button] => Array (
+ *                      [0] => Array (
+ *                          [type] => view
+ *                          [name] => 搜索
+ *                          [url] => http://www.soso.com/
+ *                          [sub_button] => Array ()
+ *                      )
+ *                      [1] => Array (
+ *                          [type] => view
+ *                          [name] => 视频
+ *                          [url] => http://v.qq.com/
+ *                          [sub_button] => Array ()
+ *                      )
+ *                      [2] => Array (
+ *                          [type] => click
+ *                          [name] => 赞一下我们
+ *                          [key] => V1001_GOOD
+ *                          [sub_button] => Array ()
+ *						)
+ *	                )
+ *	            )
+ *	        )
+ *	    )
+ *	)
+ */
 ```
 
 ### 获取带参数永久二维码图片的ticket
 ```php
 $resp = $sdk->get_qr_code_forever($scene_id);
-/* 
-	调用成功返回结果：
-	$resp => array(
-	  	'ticket' => string 'xxx' 
-	)
-*/
+/** 
+ *	调用成功返回结果：
+ *	$resp => array(
+ *	  	'ticket' => string 'xxx' 
+ *	)
+ */
 ```
 
 ### 获取带参数临时二维码图片的ticket
 ```php
 $resp = $sdk->get_qr_code_temporary($scene_id, $expire_seconds);
-/* 
-	调用成功返回结果：
-	$resp => array(
-	  	'ticket' => string 'xxx' 
-	  	'expire_seconds' => int xxx
-	)
-*/
+/** 
+ *	调用成功返回结果：
+ *	$resp => array(
+ *	  	'ticket' => string 'xxx' 
+ *	  	'expire_seconds' => int xxx
+ *	)
+ */
 ```
 
