@@ -2,10 +2,6 @@
 
 header("Content-Type: text/html; charset=utf-8");
 
-/**
- * 微信第三方接口SDK
- * @author raphealguo cyrilzhao
- */
 class WxSDKException extends Exception {
 	public function __construct($msg = 'WxSDKException'){
 		$this->msg = $msg;
@@ -16,35 +12,32 @@ class WxSDKException extends Exception {
 	}
 }
 
+/**
+ * 微信第三方接口SDK
+ * @author raphealguo cyrilzhao
+ */
 class WxSDK{
 
 	public static $boundary = '';
 
-	private $host = 'https://api.weixin.qq.com/cgi-bin/';
+	public $timeout = 30;
+	public $connecttimeout = 30;
+	public $ssl_verifypeer = FALSE;
+	public $useragent = 'WeiXin SDK 1.0.0';
 	
+	private $host = 'https://api.weixin.qq.com/cgi-bin/';
+	private $access_token = null;
+	private $expires_in = 0;
+	private $secret = '';
 	private $appid = '';
 	
-	private $secret = '';
-
-
-	public $timeout = 30;
-
-	public $connecttimeout = 30;
-
-	public $ssl_verifypeer = FALSE;
-
-	public $useragent = 'WeiXin SDK 1.0.0';
-
-	private $access_token = null;
-
-	private $expires_in = 0;
-
 	public function __construct($appid = '', $secret = ''){
 		$this->appid = $appid;
 		$this->secret = $secret;
 		$this->get_access_token();
 	}
 
+	// 将xml字符串解析为数组对象
 	public function parseRespXML($xmlString) {
 		$result = array();
 
@@ -58,14 +51,36 @@ class WxSDK{
 		return $result;
 	}
 
+	private function getXMlString($array) {
+		$resultStr = "";
+		foreach ($array as $key => $value) {
+			if(is_array($value) || is_object($value)) {
+				$value = $this->getXMlString($value);
+			} else if(!is_numeric($value)) {
+				$value = "<![CDATA[" . $value . "]]>";
+			}
+
+			$resultStr = $resultStr . "<" . $key . ">" . $value . "</" . $key . ">";
+		}
+
+		return $resultStr;
+	}
+
+	// 将数组对象转换为xml字符串
 	public function getRespXML($array) {
 		$xmlObj = new SimpleXMLElement("<xml></xml>");
 
 		foreach ($array as $key => $value) {
+			if(is_array($value) || is_object($value)) {
+				$value = $this->getXMlString($value);
+			} else if(!is_numeric($value)) {
+				$value = "<![CDATA[" . $value . "]]>";
+			}
 			$xmlObj->addChild($key, $value);
 		}
 			
 		$xmlString = $xmlObj->asXML();
+		$xmlString = htmlspecialchars_decode($xmlString);
 		return $xmlString;
 	}
 
@@ -82,6 +97,7 @@ class WxSDK{
 			return false;
 		}
 	}
+	// 验证token是否合法，成功则直接输出echostr
 	public function valid_token($echostr, $signature, $timestamp, $nonce, $token){
 		if ($this->_checkSignature($signature, $timestamp, $nonce, $token)){
 			echo $echostr;
@@ -198,34 +214,15 @@ class WxSDK{
 			case 'GET':
 				$cgi = $cgi . '?' . http_build_query($params);
 				return $this->http_send($cgi, 'GET');
-			case 'POST':
+			default:
 				$headers = array();
 				if (!$multi) {
-					if ((is_array($params) || is_object($params)) ) {
-						$body = $params;
-					} else {
-						$body = $params;
-					}
+					$body = $params;
 				} else {
 					$body = self::build_http_query_multi($params);
 					$headers[] = "Content-Type: multipart/form-data; boundary=" . self::$boundary;
 				}
 				return $this->http_send($cgi, $method, $body, $headers);
-			default:
-				$body = array();
-				$headers = array();
-				if (!$multi) {
-					if (isset($params["post"]) && (is_array($params["post"]) || is_object($params["post"]))) {
-						$body = http_build_query($params["post"]);
-					} else {
-						$body = $params["post"];
-					}
-				} else {
-					$body = self::build_http_query_multi($params["post"]);
-					$headers[] = "Content-Type: multipart/form-data; boundary=" . self::$boundary;
-				}
-				$cgi = $cgi . '?' . http_build_query($params["get"]);
-				return $this->http_send($cgi, "POST", $body, $headers);
 		}
 	}
 	function get($url, $parameters = array(), $format = 'json') {
@@ -252,10 +249,15 @@ class WxSDK{
 	}
 
 	private static function _check_resp_cb($resp, $excepition_msg){
-		if (is_array($resp) && isset($resp['errcode']) && $resp['errcode'] == 0) {
-			return $resp;
-		} else {
-			throw new WxSDKException($excepition_msg . " msg : " . $resp['errmsg']. ', errorCode :' . $resp['errcode']);
+		try {
+			if (is_array($resp) && isset($resp['errcode']) && $resp['errcode'] == 0) {
+				return $resp;
+			} else {
+				throw new WxSDKException($excepition_msg . " msg : " . $resp['errmsg']. ', errorCode :' . $resp['errcode']);
+			}
+		} catch (WxSDKException $e) {
+			echo $e->getErrorMsg();
+			return false;
 		}
 	}
 	private static function _check_resp_cb_without_errcode($resp, $excepition_msg){
@@ -282,7 +284,7 @@ class WxSDK{
 		$resp = self::_check_resp_cb_without_errcode($resp, 'get_access_token');
 
 		if($resp === false) 
-			return false;
+			throw new WxSDKException("Failed to initalize SDK");
 
 		$this->access_token = $resp['access_token'];
 		$this->expires_in = $resp['expires_in'];
@@ -290,15 +292,204 @@ class WxSDK{
 		return $resp;
 	}
 
-	// 下载多媒体文件
-	public function get_media($media_id) {
+	// 上传多媒体文件
+	public function upload_media($absolute_file_path, $type) {
 		$params = array();
-		$params["access_token"] = $this->access_token;
-		$params["media_id"] = $media_id;
+		$params["file"] = "@" . $absolute_file_path;
 
-		$resp = $this->get("media/get", $params);
-		$resp = self::_check_resp_cb_without_errcode($resp, 'get_access_token');
+		$access_token = $this->access_token;
+		$resp = $this->post("media/upload?access_token={$access_token}&type={$type}", $params);
 
+		return $resp;
+	}
+
+	// 下载多媒体文件
+	// public function get_media($media_id) {
+	// 	$params = array();
+	// 	$params["access_token"] = $this->access_token;
+	// 	$params["media_id"] = $media_id;
+
+	// 	$resp = $this->get("media/get", $params);
+	// 	$resp = self::_check_resp_cb_without_errcode($resp, 'get_media');
+
+	// 	return $resp;
+	// }
+
+	// 被动回复文字消息
+	public function send_callback_text_message($touser_openid, $fromuser_openid, $content) {
+		$params = array();
+		$params["ToUserName"] = $touser_openid;
+		$params["FromUserName"] = $fromuser_openid;
+		$params["CreateTime"] = strtotime("now");
+		$params["MsgType"] = "text";
+		$params["Content"] = $content;
+
+		$xmlString = $this->getRespXML($params);
+		echo $xmlString;
+	}
+
+	// 被动回复图片消息
+	public function send_callback_image_message($touser_openid, $fromuser_openid, $media_id) {
+		$params = array();
+		$params["ToUserName"] = $touser_openid;
+		$params["FromUserName"] = $fromuser_openid;
+		$params["CreateTime"] = strtotime("now");
+		$params["MsgType"] = "image";
+		$params["Image"] = array("MediaId" => $media_id);
+
+		$xmlString = $this->getRespXML($params);
+		echo $xmlString;
+	}
+
+	// 被动回复语音消息
+	public function send_callback_voice_message($touser_openid, $fromuser_openid, $media_id) {
+		$params = array();
+		$params["ToUserName"] = $touser_openid;
+		$params["FromUserName"] = $fromuser_openid;
+		$params["CreateTime"] = strtotime("now");
+		$params["MsgType"] = "voice";
+		$params["Voice"] = array("MediaId" => $media_id);
+
+		$xmlString = $this->getRespXML($params);
+		echo $xmlString;
+	}
+
+	// 被动回复视频消息
+	public function send_callback_video_message($touser_openid, $fromuser_openid, $media_id, $thumb_media_id) {
+		$params = array();
+		$params["ToUserName"] = $touser_openid;
+		$params["FromUserName"] = $fromuser_openid;
+		$params["CreateTime"] = strtotime("now");
+		$params["MsgType"] = "video";
+		$params["Video"] = array(
+			"MediaId" => $media_id,
+			"ThumbMediaId" => $thumb_media_id
+		);
+
+		$xmlString = $this->getRespXML($params);
+		echo $xmlString;
+	}
+
+	// 被动回复音乐消息
+	public function send_callback_music_message($touser_openid, $fromuser_openid, $music_title, $description, $music_url, $hqmusicurl, $thumb_media_id) {
+		$params = array();
+		$params["ToUserName"] = $touser_openid;
+		$params["FromUserName"] = $fromuser_openid;
+		$params["CreateTime"] = strtotime("now");
+		$params["MsgType"] = "music";
+		$params["Music"] = array(
+			"Title" => $music_title,
+			"Description" => $description,
+			"MusicUrl" => $music_url,
+			"HQMusicUrl" => $hqmusicurl,
+			"ThumbMediaId" => $thumb_media_id
+		);
+
+		$xmlString = $this->getRespXML($params);
+		echo $xmlString;
+	}
+
+	// 被动回复图文消息
+	public function send_callback_news_message($touser_openid, $fromuser_openid, $articleCount, $articles) {
+		$params = array();
+		$params["ToUserName"] = $touser_openid;
+		$params["FromUserName"] = $fromuser_openid;
+		$params["CreateTime"] = strtotime("now");
+		$params["MsgType"] = "news";
+		$params["ArticleCount"] = $articleCount;
+
+		$articleStr = "";
+		foreach ($articles as $key => $value) {
+			$articleStr = $articleStr . $this->getXMlString(array("item" => $value));
+		}
+		$params["Articles"] = $articleStr;
+
+		$xmlString = $this->getRespXML($params);
+		echo $xmlString;
+	}
+
+	// 将客服消息推送到微信服务器
+	private function send_custom_message($params_json_str) {
+		$access_token = $this->access_token;
+		
+		return $this->post("message/custom/send?access_token={$access_token}", $params_json_str);
+	}
+
+	// 发送客服文字消息
+	public function send_custom_text_message($touser_openid, $content) {
+		$params = array();
+		$params["msgtype"] = "text";
+		$params["touser"] = $touser_openid;
+		$params["text"] = array("content" => $content);
+		$params_json_str = self::_replace_unicode(json_encode($params));
+
+		$resp = $this->send_custom_message($params_json_str);
+		return $resp;
+	}
+
+	// 发送客服图片消息
+	public function send_custom_image_message($touser_openid, $media_id) {
+		$params = array();
+		$params["msgtype"] = "image";
+		$params["touser"] = $touser_openid;
+		$params["image"] = array("media_id" => $media_id);
+		$params_json_str = self::_replace_unicode(json_encode($params));
+
+		$resp = $this->send_custom_message($params_json_str);
+		return $resp;
+	}
+
+	// 发送客服语音消息
+	public function send_custom_voice_message($touser_openid, $media_id) {
+		$params = array();
+		$params["msgtype"] = "voice";
+		$params["touser"] = $touser_openid;
+		$params["voice"] = array("media_id" => $media_id);
+		$params_json_str = self::_replace_unicode(json_encode($params));
+
+		$resp = $this->send_custom_message($params_json_str);
+		return $resp;
+	}
+
+	// 发送客服视频消息
+	public function send_custom_video_message($touser_openid, $media_id, $thumb_media_id) {
+		$params = array();
+		$params["msgtype"] = "video";
+		$params["touser"] = $touser_openid;
+		$params["video"] = array("media_id" => $media_id, "thumb_media_id" => $thumb_media_id);
+		$params_json_str = self::_replace_unicode(json_encode($params));
+
+		$resp = $this->send_custom_message($params_json_str);
+		return $resp;
+	}
+
+	// 发送客服音乐消息
+	public function send_custom_music_message($touser_openid, $music_title, $music_url, $description, $hqmusicurl, $thumb_media_id) {
+		$params = array();
+		$params["msgtype"] = "music";
+		$params["touser"] = $touser_openid;
+		$params["music"] = array(
+			"title" => $music_title,
+		    "musicurl" => $music_url,
+		    "hqmusicurl" => $hqmusicurl,
+		    "description" => $description,
+		    "thumb_media_id" => $thumb_media_id 
+		);
+		$params_json_str = self::_replace_unicode(json_encode($params));
+
+		$resp = $this->send_custom_message($params_json_str);
+		return $resp;
+	}
+
+	// 发送客服图文消息
+	public function send_custom_news_message($articlesArray) {
+		$params = array();
+		$params["msgtype"] = "news";
+		$params["touser"] = $touser_openid;
+		$params["news"] = array("articles" => $articlesArray);
+		$params_json_str = self::_replace_unicode(json_encode($params));
+
+		$resp = $this->send_custom_message($params_json_str);
 		return $resp;
 	}
 
@@ -380,15 +571,27 @@ class WxSDK{
 		return $resp;
 	}
 
-	// 获取用户地理位置
-
-
 	// 创建自定义菜单
 	public function create_menu($menu_arr){
-		$menu_json_str = self::_replace_unicode(json_encode(array("button"=>$menu_arr)));
+		$params = array("button" => array());
 
+		foreach ($menu_arr as $key => $value) {
+			if(is_numeric($key)) {	// 普通一级菜单
+				array_push($params["button"], $value);
+			} else {				// 带有二级菜单的一级菜单
+				$menu = array();
+				$menu["name"] = $key;
+				$menu["sub_button"] = array();
+				foreach ($value as $sub_key => $sub_value) {
+					array_push($menu["sub_button"], $sub_value);
+				}
+				array_push($params["button"], $menu);
+			}
+		}
+
+		$menu_json_str = self::_replace_unicode(json_encode($params));
 		$access_token = $this->access_token;
-		if (!$access_token){
+		if (!$access_token) {
 			throw new WxSDKException("access_token null");
 		}
 		$resp = $this->post("menu/create?access_token={$access_token}", $menu_json_str);
@@ -411,18 +614,55 @@ class WxSDK{
 		if (!$access_token){
 			throw new WxSDKException("access_token null");
 		}
-		$resp = $this->get("menu/get", array("access_token"=>$access_token));
-		return self::_check_resp_cb($resp, "get_menu failed.");
+		$resp = $this->get("menu/get", array("access_token" => $access_token));
+		return self::_check_resp_cb_without_errcode($resp, "get_menu failed.");
+	}
+
+	private function get_qr_code($params) {
+		$access_token = $this->access_token;
+		$qrcode_json_str = self::_replace_unicode(json_encode($params));
+		$resp = $this->post("qrcode/create?access_token={$access_token}", $qrcode_json_str);
+
+		return $resp;
 	}
 
 	// 获取带参数永久二维码图片的ticket
-	public function get_qr_code($qrcode_arr){
-		$access_token = $this->access_token;
-		$qrcode_json_str = self::_replace_unicode(json_encode($qrcode_arr));
+	public function get_qr_code_forever($scene_id) {
+		$params = array(
+			"action_name" => "QR_LIMIT_SCENE",
+			"action_info" => array(
+				"scene" => array(
+					"scene_id" => $scene_id
+				)
+			)
+		);
 
-		$resp = $this->post("qrcode/create?access_token={$access_token}", $qrcode_json_str);
-		$resp = self::_check_resp_cb_without_errcode($resp, "get_qr_code failed.");
+		$resp = $this->get_qr_code($params);
+		$resp = self::_check_resp_cb_without_errcode($resp, "get_qr_code_forever failed.");
 
 		return $resp;
+	}
+
+	// 获取带参数临时二维码图片的ticket
+	public function get_qr_code_temporary($scene_id, $expire_seconds) {
+		$params = array(
+			"expire_seconds" => $expire_seconds,
+			"action_name" => "QR_SCENE",
+			"action_info" => array(
+				"scene" => array(
+					"scene_id" => $scene_id
+				)
+			)
+		);
+
+		$resp = $this->get_qr_code($params);
+		$resp = self::_check_resp_cb_without_errcode($resp, "get_qr_code_temporary failed.");
+
+		return $resp;
+	}
+
+	// 通过ticket换取二维码图片url
+	public function get_qr_code_url($ticket) {
+		return 'https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket='. $ticket;
 	}
 }
