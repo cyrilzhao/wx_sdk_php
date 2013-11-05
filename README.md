@@ -8,55 +8,89 @@ mp.weixin.qq.com/wiki
 ### 实例化SDK对象
 
 ```php
-define('TOKEN', 'test');	// 这里的TOKEN由用户自行决定并填写，且应与在公众平台开发者页面填写的token保持一致
+// 这里的TOKEN由用户自行决定并填写，且应与在公众平台开发者页面填写的token保持一致
+define('TOKEN', 'test');	
 $sdk = new WxSDK($appid, $secret);
 ```
 
-### 查询分组
+### 上传媒体文件
+```php
+// absolute_file_path一定要是文件的绝对路径，文件类型type的可选项有image,voice,video和thumb
+$resp = $sdk->upload_media($absolute_file_path, $type);
+/* 
+	$resp => array(
+	  	'type' => string 'image' 
+	  	'media_id' => string 'xxx' 
+	  	'created_at' => int xxx
+	)
+*/
+```
 
-	$groups = $sdk->get_groups();
+### 查询分组
+```php
+$groups = $sdk->get_groups();
+```
 
 ### 创建分组
-	
-	$resp = $sdk->create_group($group_name);
+```php
+$resp = $sdk->create_group($group_name);
+```
 
 ### 修改分组名
-	
-	$resp = $sdk->update_group($group_id, $group_name);
+```php
+$resp = $sdk->update_group($group_id, $group_name);
+```
 
 ### 移动用户分组
-	
-	$resp = $sdk->update_group_of_user($openid, $to_groupid);
+```php
+$resp = $sdk->update_group_of_user($openid, $to_groupid);
+```
 
 ### 获取用户基本信息
-	
-	$resp = $sdk->get_user_info($openid);
+```php
+$resp = $sdk->get_user_info($openid);
+```
 
 ### 获取关注者列表
-	
-	$resp = $sdk->get_user_list();
+```php
+$resp = $sdk->get_user_list();
+```
 
 ### 创建自定义菜单
-
-	$resp = $sdk->create_menu(
+```php
+$resp = $sdk->create_menu(
+	array(
 		array(
-			array(
-				"type" => "click",
-				"name" => "今日歌曲",
-				"key" => "V1001_TODAY_MUSIC"
-			),
-			array(
-				"type" => "view",
-				"name" => "跳转",
-				"url" => "http://www.qq.com",
-			)
+			"type" => "click",
+			"name" => "今日歌曲",
+			"key" => "V1001_TODAY_MUSIC"
+		),
+		array(
+			"type" => "view",
+			"name" => "跳转",
+			"url" => "http://www.qq.com",
 		)
-	);
+	)
+);
+```
 
 ### 删除自定义菜单
-
-	$resp = $sdk->delete_menu();
+```php
+$resp = $sdk->delete_menu();
+```
 
 ### 获取自定义菜单
-	
-	$resp = $sdk->get_menu();
+```php	
+$resp = $sdk->get_menu();
+```
+
+### 获取带参数永久二维码图片的ticket
+```php
+$resp = $sdk->get_qr_code_forever($scene_id);
+/* 
+	$resp => array(
+	  	'ticket' => string 'xxx' 
+	)
+*/
+```
+
