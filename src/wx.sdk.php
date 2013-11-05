@@ -396,13 +396,14 @@ class WxSDK{
 		$params["MsgType"] = "news";
 		$params["ArticleCount"] = $articleCount;
 
-		$articleStr = "";
 		foreach ($articles as $key => $value) {
-			$articleStr = $articleStr . $this->getXMlString(array("item" => $value));
+			$articles[$key] = array("item" => $value);
 		}
-		$params["Articles"] = $articleStr;
-
+        
+		$params["Articles"] = $articles;
 		$xmlString = $this->getRespXML($params);
+		$xmlString = preg_replace("/<\/\d>/ies", "", $xmlString);
+		$xmlString = preg_replace("/<\d>/ies", "", $xmlString);
 		var_dump($xmlString);
 	}
 
