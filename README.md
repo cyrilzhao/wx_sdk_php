@@ -1,4 +1,4 @@
-微信公众平台第三方接口sdk
+微信公众平台第三方接口SDK
 =========================
 详细接口调用方法请查阅wiki文档：
 mp.weixin.qq.com/wiki
@@ -6,12 +6,14 @@ mp.weixin.qq.com/wiki
 使用示例
 ========
 ### 实例化SDK对象
-	
-	define('TOKEN', 'test');	// 这里的TOKEN由用户自行决定并填写，且应与在公众平台开发者页面填写的token保持一致
-	$sdk = new WxSDK($appid, $secret);
+
+```php
+define('TOKEN', 'test');	// 这里的TOKEN由用户自行决定并填写，且应与在公众平台开发者页面填写的token保持一致
+$sdk = new WxSDK($appid, $secret);
+```
 
 ### 查询分组
-	
+
 	$groups = $sdk->get_groups();
 
 ### 创建分组
