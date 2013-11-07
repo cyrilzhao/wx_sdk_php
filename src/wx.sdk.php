@@ -123,9 +123,7 @@ class HTTP_Helper {
 		}
 	}
 
-	/**
-	 *  获取http头部信息并保存在http_header属性数组中
-	 */
+	// 获取http头部信息并保存在http_header属性数组中
 	public function get_http_header($ch, $header) {
 		$i = strpos($header, ':');
 		if (!empty($i)) {
@@ -136,16 +134,12 @@ class HTTP_Helper {
 		return strlen($header);
 	}
 
-	/**
-	 * 微信不支持\uxxxx的UNICODE模式，所以需要转成中文！
-	 *
-	 * @param 	$str 	要转换的字符串
-	 * @return   		转换后的字符串
-	 */
+	// 微信不支持\uxxxx的UNICODE模式，所以需要转成中文！
 	public static function _replace_unicode($str) {
 		return preg_replace("#\\\u([0-9a-f]{4})#ie", "iconv('UCS-2', 'UTF-8', pack('H4', '\\1'))", $str); 
 	}
 
+	// 发送get请求的接口
 	public function get($url, $parameters = array(), $access_token, $format = 'json') {
 		$resp = $this->do_request($url, 'GET', $parameters);
 
@@ -155,11 +149,7 @@ class HTTP_Helper {
 		return $resp;
 	}
 
-	/**
-	 * POST wrapper for oAuthRequest.
-	 *
-	 * @return mixed
-	 */
+	// 发送post请求的接口
 	public function post($url, $parameters = array(), $access_token, $multi = false, $format = 'json') {
 		$resp = $this->do_request($url, 'POST', $parameters, $multi);
 
@@ -326,6 +316,7 @@ class WxSDK {
 
 	// 下载远程文件并保存到本地
 	private function _get_remote_file($url, $folder = "./") { 
+		$isSuccess = true;
 	    set_time_limit (24 * 60 * 60); // 设置超时时间 
 	    $destination_folder = $folder . '/'; // 文件下载保存目录，默认为当前文件目录 
 	    if (!is_dir($destination_folder)) { // 判断目录是否存在 
@@ -338,7 +329,11 @@ class WxSDK {
 	        if ($newf) // 如果文件保存成功 
 	            while (!feof($file)) { // 判断附件写入是否完整 
 	                fwrite($newf, fread($file, 1024 * 8), 1024 * 8); // 没有写完就继续 
+	        } else {
+	        	$isSuccess = false;
 	        }  
+	    } else {
+	    	$isSuccess = false;
 	    }  
 	    if ($file) { 
 	        fclose($file); // 关闭远程文件 
@@ -346,8 +341,10 @@ class WxSDK {
 	    if ($newf) { 
 	        fclose($newf); // 关闭本地文件 
 	    }  
-	    return true; 
+	    return $isSuccess; 
 	}  
+
+	// 循环创建所需的目录
 	private function _mkdirs($path , $mode = "0755") { 
 	    if (!is_dir($path)) { // 判断目录是否存在 
 	        _mkdirs(dirname($path), $mode); // 循环建立目录   
@@ -362,7 +359,6 @@ class WxSDK {
 		$params["access_token"] = $this->access_token;
 		$params["media_id"] = $media_id;
 
-		$resp = $this->get("media/get", $params);
 		$resp = self::_check_resp_cb_without_errcode($resp, 'get_media');
 
 		return $resp;
