@@ -359,6 +359,7 @@ class WxSDK {
 		$params["access_token"] = $this->access_token;
 		$params["media_id"] = $media_id;
 
+		$
 		$resp = self::_check_resp_cb_without_errcode($resp, 'get_media');
 
 		return $resp;
@@ -447,14 +448,16 @@ class WxSDK {
 		$params["MsgType"] = "news";
 		$params["ArticleCount"] = $articleCount;
 
-		$articleStr = "";
 		foreach ($articles as $key => $value) {
-			$articleStr = $articleStr . $this->_getXMlString(array("item" => $value));
+			$articles[$key] = array("item" => $value);
 		}
-		$params["Articles"] = $articleStr;
 
+		$params["Articles"] = $articles;
 		$xmlString = $this->getRespXML($params);
-		var_dump($xmlString);
+		$xmlString = preg_replace("/<\/\d>/ies", "", $xmlString);
+		$xmlString = preg_replace("/<\d>/ies", "", $xmlString);
+
+		echo $xmlString;
 	}
 
 	// 将客服消息推送到微信服务器
