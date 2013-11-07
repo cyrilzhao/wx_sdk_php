@@ -2,6 +2,8 @@
 
 require('../src/wx.sdk.php');
 
+header("Content-Type:text/html;charset=utf-8");
+
 define('TOKEN', 'test');
 $sdk = new WxSDK('wx1bc509d4d039b25a', '9d513ee452109a3b03630334aea45006');
 
@@ -10,11 +12,11 @@ $sdk = new WxSDK('wx1bc509d4d039b25a', '9d513ee452109a3b03630334aea45006');
 // print_r($groups);
 
 // 创建分组
-// $resp = $sdk->create_group("cyrilzhao");
+// $resp = $sdk->create_group("hahahaha");
 // var_dump($resp);
 
 // 修改分组名
-// $resp = $sdk->update_group(116, "cccc");
+// $resp = $sdk->update_group(116, "aaaa");
 // var_dump($resp);
 
 // 移动用户分组
@@ -44,7 +46,6 @@ $sdk = new WxSDK('wx1bc509d4d039b25a', '9d513ee452109a3b03630334aea45006');
 // 					"<Precision>119.385040</Precision>".
 // 				"</xml>";
 // $xml = $sdk->parseRespXML($xmlString);
-
 // print_r($xml);
 
 // 生成xml响应包
@@ -65,7 +66,6 @@ $sdk = new WxSDK('wx1bc509d4d039b25a', '9d513ee452109a3b03630334aea45006');
 // 	)
 // );
 // var_dump($xmlString);
-
 // $xml->FromUserName = preg_replace("/\[CDATA\](.*?)\[\/CDATA\]/ies", "base64_decode('$1')", $xml->FromUserName);
 // print_r($xml->FromUserName);
 
@@ -115,7 +115,7 @@ $sdk = new WxSDK('wx1bc509d4d039b25a', '9d513ee452109a3b03630334aea45006');
 
 // 获取自定义菜单
 // $resp = $sdk->get_menu();
-// var_dump($resp["menu"]["button"]);
+// print_r($resp);
 
 // 删除自定义菜单
 // $resp = $sdk->delete_menu();
@@ -142,20 +142,18 @@ $sdk = new WxSDK('wx1bc509d4d039b25a', '9d513ee452109a3b03630334aea45006');
 // $sdk->send_callback_image_message("cyrilzhao", "zhaojian", "jmpBeA3AnEcKE0n8cd8ziYf2OUDh4xxw56tzeik-iJyGJOeTbHuzx0R7YLim7GMj");
 
 // 被动回复图文消息
-$articles = array(
-	array(
-		"Title" => "title1",
-		"Description" => "description1",
-		"PicUrl" => "1.jpg",
-		"Url" => "www.google.com"
-	),
-	array(
-		"Title" => "title1",
-		"Description" => "description1",
-		"PicUrl" => "2.jpg",
-		"Url" => "www.qq.com"
-	)
-);
-$sdk->send_callback_news_message("cyrilzhao", "zhaojian", 2, $articles);
-
-
+// $articles = array(
+// 	array(
+// 		"Title" => "title1",
+// 		"Description" => "description1",
+// 		"PicUrl" => "1.jpg",
+// 		"Url" => "www.google.com"
+// 	),
+// 	array(
+// 		"Title" => "title1",
+// 		"Description" => "description1",
+// 		"PicUrl" => "2.jpg",
+// 		"Url" => "www.qq.com"
+// 	)
+// );
+// $sdk->send_callback_news_message("cyrilzhao", "zhaojian", 2, $articles);

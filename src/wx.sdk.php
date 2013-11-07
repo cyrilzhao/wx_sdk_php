@@ -10,113 +10,23 @@ class WxSDKException extends Exception {
 	}
 }
 
-/**
- * 微信公众平台第三方接口SDK
- * @author raphealguo cyrilzhao
- */
-class WxSDK{
+class HTTP_Helper {
+	private $boundary = '';
 
-	public static $boundary = '';
+	const timeout = 30;
+	const connecttimeout = 30;
+	const ssl_verifypeer = FALSE;
+	const useragent = 'WeiXin SDK 1.0.0';
+	const host = 'https://api.weixin.qq.com/cgi-bin/';
 
-	public $timeout = 30;
-	public $connecttimeout = 30;
-	public $ssl_verifypeer = FALSE;
-	public $useragent = 'WeiXin SDK 1.0.0';
-	
-	private $host = 'https://api.weixin.qq.com/cgi-bin/';
-	private $access_token = null;
-	private $expires_in = 0;
-	private $secret = '';
-	private $appid = '';
-	
-	public function __construct($appid = '', $secret = ''){
-		$this->appid = $appid;
-		$this->secret = $secret;
-		$this->get_access_token();
-	}
-
-	// 将xml字符串解析为数组对象
-	public function parseRespXML($xmlString) {
-		$result = array();
-
-		$xml = new SimpleXMLElement($xmlString);
-
-		$xmlString = preg_replace("/\<\!\[CDATA\[(.*?)\]\]\>/ies", "'[CDATA]'.base64_encode('$1').'[/CDATA]'", $xmlString);
-		foreach ($xml->children() as $key => $value) {
-			$result[$key] = preg_replace("/\[CDATA\](.*?)\[\/CDATA\]/ies", "base64_decode('$1')", $value);
-		}
-
-		return $result;
-	}
-
-	private function getXMlString($array) {
-		$resultStr = "";
-		foreach ($array as $key => $value) {
-			if(is_array($value) || is_object($value)) {
-				$value = $this->getXMlString($value);
-			} else if(!is_numeric($value)) {
-				$value = "<![CDATA[" . $value . "]]>";
-			}
-
-			$resultStr = $resultStr . "<" . $key . ">" . $value . "</" . $key . ">";
-		}
-
-		return $resultStr;
-	}
-
-	// 将数组对象转换为xml字符串
-	public function getRespXML($array) {
-		$xmlObj = new SimpleXMLElement("<xml></xml>");
-
-		foreach ($array as $key => $value) {
-			if(is_array($value) || is_object($value)) {
-				$value = $this->getXMlString($value);
-			} else if(!is_numeric($value)) {
-				$value = "<![CDATA[" . $value . "]]>";
-			}
-			$xmlObj->addChild($key, $value);
-		}
-			
-		$xmlString = $xmlObj->asXML();
-		$xmlString = htmlspecialchars_decode($xmlString);
-		return $xmlString;
-	}
-
-	//用于开发者模式下校验来自公众平台的token参数
-	private function _checkSignature($signature, $timestamp, $nonce, $token){
-		$tmpArr = array($token, $timestamp, $nonce);
-		sort($tmpArr);
-		$tmpStr = implode($tmpArr);
-		$tmpStr = sha1($tmpStr);
-
-		if($tmpStr == $signature){
-			return true;
-		}else{
-			return false;
-		}
-	}
-	// 验证token是否合法，成功则直接输出echostr
-	public function valid_token($echostr, $signature, $timestamp, $nonce, $token){
-		if ($this->_checkSignature($signature, $timestamp, $nonce, $token)){
-			echo $echostr;
-		}
-		exit();
-	}
-	//用于开发者模式下校验来自公众平台的token参数 end
-
-	//微信不支持\uxxxx的UNICODE模式，所以需要转成中文！
-	private static function _replace_unicode($str) {
-		return preg_replace("#\\\u([0-9a-f]{4})#ie", "iconv('UCS-2', 'UTF-8', pack('H4', '\\1'))", $str); 
-	}
-
-	public static function build_http_query_multi($params) {
+	private function build_http_query_multi($params) {
 		if (!$params) return '';
 
 		uksort($params, 'strcmp');
 
 		$pairs = array();
 
-		self::$boundary = $boundary = uniqid('------------------');
+		$this->boundary = $boundary = uniqid('------------------');
 		$MPboundary = '--'.$boundary;
 		$endMPboundary = $MPboundary. '--';
 		$multipartbody = '';
@@ -145,27 +55,17 @@ class WxSDK{
 		return $multipartbody;
 	}
 
-	function get_http_header($ch, $header) {
-		$i = strpos($header, ':');
-		if (!empty($i)) {
-			$key = str_replace('-', '_', strtolower(substr($header, 0, $i)));
-			$value = trim(substr($header, $i + 2));
-			$this->http_header[$key] = $value;
-		}
-		return strlen($header);
-	}
-
-	public function http_send($url, $method, $postfields = NULL, $headers = array()) {
+	private function http_send($url, $method, $postfields = NULL, $headers = array()) {
 		$this->http_info = array();
 		$ci = curl_init();
 
 		curl_setopt($ci, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
-		curl_setopt($ci, CURLOPT_USERAGENT, $this->useragent);
-		curl_setopt($ci, CURLOPT_CONNECTTIMEOUT, $this->connecttimeout);
-		curl_setopt($ci, CURLOPT_TIMEOUT, $this->timeout);
+		curl_setopt($ci, CURLOPT_USERAGENT, self::useragent);
+		curl_setopt($ci, CURLOPT_CONNECTTIMEOUT, self::connecttimeout);
+		curl_setopt($ci, CURLOPT_TIMEOUT, self::timeout);
 		curl_setopt($ci, CURLOPT_RETURNTRANSFER, TRUE);
 		curl_setopt($ci, CURLOPT_ENCODING, "");
-		curl_setopt($ci, CURLOPT_SSL_VERIFYPEER, $this->ssl_verifypeer);
+		curl_setopt($ci, CURLOPT_SSL_VERIFYPEER, self::ssl_verifypeer);
 		curl_setopt($ci, CURLOPT_HEADERFUNCTION, array($this, 'get_http_header'));
 		curl_setopt($ci, CURLOPT_HEADER, FALSE);
 
@@ -202,10 +102,9 @@ class WxSDK{
 		return $response;
 	}
 
-	function do_request($cgi, $method, $params, $multi = false) {
-
+	private function do_request($cgi, $method, $params, $multi = false) {
 		if (strrpos($cgi, 'https://') !== 0 && strrpos($cgi, 'https://') !== 0) {
-			$cgi = "{$this->host}{$cgi}";
+			$cgi = self::host . $cgi;
 		}
 
 		switch (strtoupper($method)) {
@@ -217,13 +116,37 @@ class WxSDK{
 				if (!$multi) {
 					$body = $params;
 				} else {
-					$body = self::build_http_query_multi($params);
-					$headers[] = "Content-Type: multipart/form-data; boundary=" . self::$boundary;
+					$body = $this->build_http_query_multi($params);
+					$headers[] = "Content-Type: multipart/form-data; boundary=" . $this->boundary;
 				}
 				return $this->http_send($cgi, $method, $body, $headers);
 		}
 	}
-	function get($url, $parameters = array(), $format = 'json') {
+
+	/**
+	 *  获取http头部信息并保存在http_header属性数组中
+	 */
+	public function get_http_header($ch, $header) {
+		$i = strpos($header, ':');
+		if (!empty($i)) {
+			$key = str_replace('-', '_', strtolower(substr($header, 0, $i)));
+			$value = trim(substr($header, $i + 2));
+			$this->http_header[$key] = $value;
+		}
+		return strlen($header);
+	}
+
+	/**
+	 * 微信不支持\uxxxx的UNICODE模式，所以需要转成中文！
+	 *
+	 * @param 	$str 	要转换的字符串
+	 * @return   		转换后的字符串
+	 */
+	public static function _replace_unicode($str) {
+		return preg_replace("#\\\u([0-9a-f]{4})#ie", "iconv('UCS-2', 'UTF-8', pack('H4', '\\1'))", $str); 
+	}
+
+	public function get($url, $parameters = array(), $access_token, $format = 'json') {
 		$resp = $this->do_request($url, 'GET', $parameters);
 
 		if ($format === 'json') {
@@ -237,7 +160,7 @@ class WxSDK{
 	 *
 	 * @return mixed
 	 */
-	function post($url, $parameters = array(), $multi = false, $format = 'json') {
+	public function post($url, $parameters = array(), $access_token, $multi = false, $format = 'json') {
 		$resp = $this->do_request($url, 'POST', $parameters, $multi);
 
 		if ($format === 'json') {
@@ -245,6 +168,106 @@ class WxSDK{
 		}
 		return $resp;
 	}
+}
+
+
+/**
+ * 微信公众平台第三方接口SDK
+ *
+ * @author raphealguo cyrilzhao
+ */
+class WxSDK {
+	private $access_token = null;
+	private $expires_in = 0;
+	private $secret = '';
+	private $appid = '';
+	
+	public function __construct($appid = '', $secret = ''){
+		$this->appid = $appid;
+		$this->secret = $secret;
+		$this->get_access_token();
+	}
+
+	public function post($url, $parameters = array(), $multi = false, $format = 'json') {
+		$http_helper = new HTTP_Helper();
+
+		return $http_helper->post($url, $parameters, $this->access_token, $multi, $format);
+	}
+
+	public function get($url, $parameters = array(), $format = 'json') {
+		$http_helper = new HTTP_Helper();
+
+		return $http_helper->get($url, $parameters, $this->access_token, $format);
+	}	
+
+	// 将xml字符串解析为数组对象
+	public function parseRespXML($xmlString) {
+		$result = array();
+
+		$xml = new SimpleXMLElement($xmlString);
+
+		$xmlString = preg_replace("/\<\!\[CDATA\[(.*?)\]\]\>/ies", "'[CDATA]'.base64_encode('$1').'[/CDATA]'", $xmlString);
+		foreach ($xml->children() as $key => $value) {
+			$result[$key] = preg_replace("/\[CDATA\](.*?)\[\/CDATA\]/ies", "base64_decode('$1')", $value);
+		}
+
+		return $result;
+	}
+
+	private function _getXMlString($array) {
+		$resultStr = "";
+		foreach ($array as $key => $value) {
+			if(is_array($value) || is_object($value)) {
+				$value = $this->_getXMlString($value);
+			} else if(!is_numeric($value)) {
+				$value = "<![CDATA[" . $value . "]]>";
+			}
+
+			$resultStr = $resultStr . "<" . $key . ">" . $value . "</" . $key . ">";
+		}
+
+		return $resultStr;
+	}
+
+	// 将数组对象转换为xml字符串
+	public function getRespXML($array) {
+		$xmlObj = new SimpleXMLElement("<xml></xml>");
+
+		foreach ($array as $key => $value) {
+			if(is_array($value) || is_object($value)) {
+				$value = $this->_getXMlString($value);
+			} else if(!is_numeric($value)) {
+				$value = "<![CDATA[" . $value . "]]>";
+			}
+			$xmlObj->addChild($key, $value);
+		}
+			
+		$xmlString = $xmlObj->asXML();
+		$xmlString = htmlspecialchars_decode($xmlString);
+		return $xmlString;
+	}
+
+	//用于开发者模式下校验来自公众平台的token参数
+	private function _checkSignature($signature, $timestamp, $nonce, $token){
+		$tmpArr = array($token, $timestamp, $nonce);
+		sort($tmpArr);
+		$tmpStr = implode($tmpArr);
+		$tmpStr = sha1($tmpStr);
+
+		if($tmpStr == $signature){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	// 验证token是否合法，成功则直接输出echostr
+	public function valid_token($echostr, $signature, $timestamp, $nonce, $token){
+		if ($this->_checkSignature($signature, $timestamp, $nonce, $token)){
+			echo $echostr;
+		}
+		exit();
+	}
+	//用于开发者模式下校验来自公众平台的token参数 end
 
 	private static function _check_resp_cb($resp, $excepition_msg){
 		try {
@@ -281,7 +304,7 @@ class WxSDK{
 		$resp = $this->get('token', $params);
 		$resp = self::_check_resp_cb_without_errcode($resp, 'get_access_token');
 
-		if($resp === false) 
+		if($resp === false)
 			throw new WxSDKException("Failed to initalize SDK");
 
 		$this->access_token = $resp['access_token'];
@@ -301,17 +324,49 @@ class WxSDK{
 		return $resp;
 	}
 
+	// 下载远程文件并保存到本地
+	private function _get_remote_file($url, $folder = "./") { 
+	    set_time_limit (24 * 60 * 60); // 设置超时时间 
+	    $destination_folder = $folder . '/'; // 文件下载保存目录，默认为当前文件目录 
+	    if (!is_dir($destination_folder)) { // 判断目录是否存在 
+	        _mkdirs($destination_folder); // 如果没有就建立目录 
+	    }  
+	    $newfname = $destination_folder . basename($url); // 取得文件的名称 
+	    $file = fopen ($url, "rb"); // 远程下载文件，二进制模式 
+	    if ($file) { // 如果下载成功 
+	        $newf = fopen ($newfname, "wb"); // 打开本地文件准备写入
+	        if ($newf) // 如果文件保存成功 
+	            while (!feof($file)) { // 判断附件写入是否完整 
+	                fwrite($newf, fread($file, 1024 * 8), 1024 * 8); // 没有写完就继续 
+	        }  
+	    }  
+	    if ($file) { 
+	        fclose($file); // 关闭远程文件 
+	    }  
+	    if ($newf) { 
+	        fclose($newf); // 关闭本地文件 
+	    }  
+	    return true; 
+	}  
+	private function _mkdirs($path , $mode = "0755") { 
+	    if (!is_dir($path)) { // 判断目录是否存在 
+	        _mkdirs(dirname($path), $mode); // 循环建立目录   
+	        mkdir($path, $mode); // 建立目录 
+	    }  
+	    return true; 
+	}  
+
 	// 下载多媒体文件
-	// public function get_media($media_id) {
-	// 	$params = array();
-	// 	$params["access_token"] = $this->access_token;
-	// 	$params["media_id"] = $media_id;
+	public function get_media($media_id) {
+		$params = array();
+		$params["access_token"] = $this->access_token;
+		$params["media_id"] = $media_id;
 
-	// 	$resp = $this->get("media/get", $params);
-	// 	$resp = self::_check_resp_cb_without_errcode($resp, 'get_media');
+		$resp = $this->get("media/get", $params);
+		$resp = self::_check_resp_cb_without_errcode($resp, 'get_media');
 
-	// 	return $resp;
-	// }
+		return $resp;
+	}
 
 	// 被动回复文字消息
 	public function send_callback_text_message($touser_openid, $fromuser_openid, $content) {
@@ -398,7 +453,7 @@ class WxSDK{
 
 		$articleStr = "";
 		foreach ($articles as $key => $value) {
-			$articleStr = $articleStr . $this->getXMlString(array("item" => $value));
+			$articleStr = $articleStr . $this->_getXMlString(array("item" => $value));
 		}
 		$params["Articles"] = $articleStr;
 
@@ -407,7 +462,7 @@ class WxSDK{
 	}
 
 	// 将客服消息推送到微信服务器
-	private function send_custom_message($params_json_str) {
+	private function _send_custom_message($params_json_str) {
 		$access_token = $this->access_token;
 		
 		return $this->post("message/custom/send?access_token={$access_token}", $params_json_str);
@@ -419,9 +474,9 @@ class WxSDK{
 		$params["msgtype"] = "text";
 		$params["touser"] = $touser_openid;
 		$params["text"] = array("content" => $content);
-		$params_json_str = self::_replace_unicode(json_encode($params));
+		$params_json_str = HTTP_Helper::_replace_unicode(json_encode($params));
 
-		$resp = $this->send_custom_message($params_json_str);
+		$resp = $this->_send_custom_message($params_json_str);
 		return $resp;
 	}
 
@@ -431,9 +486,9 @@ class WxSDK{
 		$params["msgtype"] = "image";
 		$params["touser"] = $touser_openid;
 		$params["image"] = array("media_id" => $media_id);
-		$params_json_str = self::_replace_unicode(json_encode($params));
+		$params_json_str = HTTP_Helper::_replace_unicode(json_encode($params));
 
-		$resp = $this->send_custom_message($params_json_str);
+		$resp = $this->_send_custom_message($params_json_str);
 		return $resp;
 	}
 
@@ -443,9 +498,9 @@ class WxSDK{
 		$params["msgtype"] = "voice";
 		$params["touser"] = $touser_openid;
 		$params["voice"] = array("media_id" => $media_id);
-		$params_json_str = self::_replace_unicode(json_encode($params));
+		$params_json_str = HTTP_Helper::_replace_unicode(json_encode($params));
 
-		$resp = $this->send_custom_message($params_json_str);
+		$resp = $this->_send_custom_message($params_json_str);
 		return $resp;
 	}
 
@@ -455,9 +510,9 @@ class WxSDK{
 		$params["msgtype"] = "video";
 		$params["touser"] = $touser_openid;
 		$params["video"] = array("media_id" => $media_id, "thumb_media_id" => $thumb_media_id);
-		$params_json_str = self::_replace_unicode(json_encode($params));
+		$params_json_str = HTTP_Helper::_replace_unicode(json_encode($params));
 
-		$resp = $this->send_custom_message($params_json_str);
+		$resp = $this->_send_custom_message($params_json_str);
 		return $resp;
 	}
 
@@ -473,9 +528,9 @@ class WxSDK{
 		    "description" => $description,
 		    "thumb_media_id" => $thumb_media_id 
 		);
-		$params_json_str = self::_replace_unicode(json_encode($params));
+		$params_json_str = HTTP_Helper::_replace_unicode(json_encode($params));
 
-		$resp = $this->send_custom_message($params_json_str);
+		$resp = $this->_send_custom_message($params_json_str);
 		return $resp;
 	}
 
@@ -485,9 +540,9 @@ class WxSDK{
 		$params["msgtype"] = "news";
 		$params["touser"] = $touser_openid;
 		$params["news"] = array("articles" => $articlesArray);
-		$params_json_str = self::_replace_unicode(json_encode($params));
+		$params_json_str = HTTP_Helper::_replace_unicode(json_encode($params));
 
-		$resp = $this->send_custom_message($params_json_str);
+		$resp = $this->_send_custom_message($params_json_str);
 		return $resp;
 	}
 
@@ -507,7 +562,7 @@ class WxSDK{
 		$params = array();
 		$params["group"] = array();
 		$params["group"]["name"] = $group_name;
-		$params_json_str = self::_replace_unicode(json_encode($params));
+		$params_json_str = HTTP_Helper::_replace_unicode(json_encode($params));
 
 		$access_token = $this->access_token;
 		$resp = $this->post("groups/create?access_token={$access_token}", $params_json_str);
@@ -522,7 +577,7 @@ class WxSDK{
 		$params["group"] = array();
 		$params["group"]["id"] = $group_id;
 		$params["group"]["name"] = $group_name;
-		$params_json_str = self::_replace_unicode(json_encode($params));
+		$params_json_str = HTTP_Helper::_replace_unicode(json_encode($params));
 
 		$access_token = $this->access_token;
 		$resp = $this->post("groups/update?access_token={$access_token}", $params_json_str);
@@ -536,7 +591,7 @@ class WxSDK{
 		$params = array();
 		$params["openid"] = $openid;
 		$params["to_groupid"] = $to_groupid;
-		$params_json_str = self::_replace_unicode(json_encode($params));
+		$params_json_str = HTTP_Helper::_replace_unicode(json_encode($params));
 
 		$access_token = $this->access_token;
 		$resp = $this->post("groups/members/update?access_token={$access_token}", $params_json_str);
@@ -587,7 +642,7 @@ class WxSDK{
 			}
 		}
 
-		$menu_json_str = self::_replace_unicode(json_encode($params));
+		$menu_json_str = HTTP_Helper::_replace_unicode(json_encode($params));
 		$access_token = $this->access_token;
 		if (!$access_token) {
 			throw new WxSDKException("access_token null");
@@ -616,9 +671,9 @@ class WxSDK{
 		return self::_check_resp_cb_without_errcode($resp, "get_menu failed.");
 	}
 
-	private function get_qr_code($params) {
+	private function _get_qr_code($params) {
 		$access_token = $this->access_token;
-		$qrcode_json_str = self::_replace_unicode(json_encode($params));
+		$qrcode_json_str = HTTP_Helper::_replace_unicode(json_encode($params));
 		$resp = $this->post("qrcode/create?access_token={$access_token}", $qrcode_json_str);
 
 		return $resp;
@@ -635,7 +690,7 @@ class WxSDK{
 			)
 		);
 
-		$resp = $this->get_qr_code($params);
+		$resp = $this->_get_qr_code($params);
 		$resp = self::_check_resp_cb_without_errcode($resp, "get_qr_code_forever failed.");
 
 		return $resp;
@@ -653,7 +708,7 @@ class WxSDK{
 			)
 		);
 
-		$resp = $this->get_qr_code($params);
+		$resp = $this->_get_qr_code($params);
 		$resp = self::_check_resp_cb_without_errcode($resp, "get_qr_code_temporary failed.");
 
 		return $resp;
