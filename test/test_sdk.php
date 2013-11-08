@@ -5,7 +5,7 @@ require('../src/wx.sdk.php');
 header("Content-Type:text/html;charset=utf-8");
 
 define('TOKEN', 'test');
-$sdk = new WxSDK('wx1bc509d4d039b25a', '9d513ee452109a3b03630334aea45006');
+$sdk = new WxSDK('appid', 'secret');
 
 // 查询分组
 // $groups = $sdk->get_groups();
