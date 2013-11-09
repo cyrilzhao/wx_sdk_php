@@ -175,7 +175,9 @@ class WxSDK {
 	public function __construct($appid = '', $secret = ''){
 		$this->appid = $appid;
 		$this->secret = $secret;
-		$this->get_access_token();
+		if ($appid != '' && $secret != ''){
+			$this->get_access_token();
+		}
 	}
 
 	public function post($url, $parameters = array(), $multi = false, $format = 'json') {
@@ -221,7 +223,7 @@ class WxSDK {
 
 	// 将数组对象转换为xml字符串
 	public function getRespXML($array) {
-		$xmlObj = new SimpleXMLElement("<xml></xml>");
+		$xmlObj = '';
 
 		foreach ($array as $key => $value) {
 			if(is_array($value) || is_object($value)) {
@@ -229,16 +231,15 @@ class WxSDK {
 			} else if(!is_numeric($value)) {
 				$value = "<![CDATA[" . $value . "]]>";
 			}
-			$xmlObj->addChild($key, $value);
+			$xmlObj .= "<{$key}>$value</{$key}>";
 		}
-			
-		$xmlString = $xmlObj->asXML();
-		$xmlString = htmlspecialchars_decode($xmlString);
+		$xmlString = "<xml>{$xmlObj}</xml>";
+		//$xmlString = htmlspecialchars_decode($xmlString);
 		return $xmlString;
 	}
 
 	//用于开发者模式下校验来自公众平台的token参数
-	private function _checkSignature($signature, $timestamp, $nonce, $token){
+	private static function _checkSignature($signature, $timestamp, $nonce, $token){
 		$tmpArr = array($token, $timestamp, $nonce);
 		sort($tmpArr);
 		$tmpStr = implode($tmpArr);
@@ -251,8 +252,12 @@ class WxSDK {
 		}
 	}
 	// 验证token是否合法，成功则直接输出echostr
-	public function valid_token($echostr, $signature, $timestamp, $nonce, $token){
-		if ($this->_checkSignature($signature, $timestamp, $nonce, $token)){
+	public static function valid_token($token){
+		$echostr = $_GET['echostr'];
+		$signature = $_GET['signature'];
+		$timestamp = $_GET['timestamp'];
+		$nonce = $_GET['nonce'];
+		if (self::_checkSignature($signature, $timestamp, $nonce, $token)){
 			echo $echostr;
 		}
 		exit();
