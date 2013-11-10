@@ -5,8 +5,9 @@ mp.weixin.qq.com/wiki
 
 使用示例
 ========
-### 实例化SDK对象
+##### 注意：所有接口调用失败均返回false
 
+### 实例化SDK对象
 ```php
 // 这里的TOKEN由用户自行决定并填写，且应与在公众平台开发者页面填写的token保持一致
 define('TOKEN', 'test');	
@@ -29,6 +30,20 @@ $resp = $sdk->upload_media($absolute_file_path, $type);
  *	  	'media_id' => string 'xxx' 
  *	  	'created_at' => int xxx
  *	)
+ */
+```
+
+### 下载媒体文件
+```php
+/**
+ * 公众号可调用本接口来获取多媒体文件。请注意，调用该接口需http协议。
+ *
+ * @param   media_id            通过上传多媒体文件，得到的id
+ */
+ $resp = $sdk->get_media($media_id);
+ /** 
+ *  调用成功返回结果：
+ *  $resp => true
  */
 ```
 

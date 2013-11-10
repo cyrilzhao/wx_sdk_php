@@ -55,7 +55,7 @@ class HTTP_Helper {
 		return $multipartbody;
 	}
 
-	private function http_send($url, $method, $postfields = NULL, $headers = array()) {
+	public function http_send($url, $method, $postfields = NULL, $headers = array()) {
 		$this->http_info = array();
 		$ci = curl_init();
 
@@ -320,34 +320,64 @@ class WxSDK {
 	}
 
 	// 下载远程文件并保存到本地
-	private function _get_remote_file($url, $folder = "./") { 
+	// private function _get_remote_file($url, $folder = ".") { 
+	// 	$isSuccess = true;
+	//     set_time_limit (24 * 60 * 60); // 设置超时时间 
+	//     $destination_folder = $folder . '/'; // 文件下载保存目录，默认为当前文件目录 
+	//     if (!is_dir($destination_folder)) { // 判断目录是否存在 
+	//         _mkdirs($destination_folder); // 如果没有就建立目录 
+	//     }  
+	//     $newfname = $destination_folder . basename($url); // 取得文件的名称 
+	//     $file = fopen ($url, "rb"); // 远程下载文件，二进制模式 
+	//     if ($file) { // 如果下载成功 
+	//         $newf = fopen ($newfname, "wb"); // 打开本地文件准备写入
+	//         if ($newf) // 如果文件保存成功 
+	//             while (!feof($file)) { // 判断附件写入是否完整 
+	//                 fwrite($newf, fread($file, 1024 * 8), 1024 * 8); // 没有写完就继续 
+	//         } else {
+	//         	$isSuccess = false;
+	//         }  
+	//     } else {
+	//     	$isSuccess = false;
+	//     }  
+	//     if ($file) { 
+	//         fclose($file); // 关闭远程文件 
+	//     }  
+	//     if ($newf) { 
+	//         fclose($newf); // 关闭本地文件 
+	//     }  
+	//     return $isSuccess; 
+	// }  
+
+	private function _get_remote_file($url, $folder = ".", $media_id)
+	{
 		$isSuccess = true;
-	    set_time_limit (24 * 60 * 60); // 设置超时时间 
-	    $destination_folder = $folder . '/'; // 文件下载保存目录，默认为当前文件目录 
-	    if (!is_dir($destination_folder)) { // 判断目录是否存在 
-	        _mkdirs($destination_folder); // 如果没有就建立目录 
-	    }  
-	    $newfname = $destination_folder . basename($url); // 取得文件的名称 
-	    $file = fopen ($url, "rb"); // 远程下载文件，二进制模式 
-	    if ($file) { // 如果下载成功 
-	        $newf = fopen ($newfname, "wb"); // 打开本地文件准备写入
-	        if ($newf) // 如果文件保存成功 
-	            while (!feof($file)) { // 判断附件写入是否完整 
-	                fwrite($newf, fread($file, 1024 * 8), 1024 * 8); // 没有写完就继续 
-	        } else {
-	        	$isSuccess = false;
-	        }  
-	    } else {
-	    	$isSuccess = false;
-	    }  
-	    if ($file) { 
-	        fclose($file); // 关闭远程文件 
-	    }  
-	    if ($newf) { 
-	        fclose($newf); // 关闭本地文件 
-	    }  
-	    return $isSuccess; 
-	}  
+		$http_helper = new HTTP_Helper();
+		$resp = $http_helper->http_send($url, "GET");
+		
+		$res = json_decode($resp, true);
+		if(!isset($res)) {
+			$destination_folder = $folder . '/'; // 文件下载保存目录，默认为当前文件目录
+			if (!is_dir($destination_folder)) { // 判断目录是否存在 
+		        $this->_mkdirs($destination_folder); // 如果没有就建立目录 
+		    }
+			$newfname = $destination_folder . $media_id;
+			$newf = fopen ($newfname, "wb"); // 打开本地文件准备写入
+			if ($newf) { // 如果文件保存成功 
+		        fwrite($newf, $resp); // 没有写完就继续 
+		    } else {
+		    	$isSuccess = false;
+		    }
+		    if ($newf) { 
+		        fclose($newf); // 关闭本地文件 
+	    	} 
+		} else {
+			$resp = $this->_check_resp_cb_without_errcode($res, 'get_media');
+			$isSuccess = false;
+		}
+
+		return $isSuccess;
+	}
 
 	// 循环创建所需的目录
 	private function _mkdirs($path , $mode = "0755") { 
@@ -360,12 +390,10 @@ class WxSDK {
 
 	// 下载多媒体文件
 	public function get_media($media_id) {
-		$params = array();
-		$params["access_token"] = $this->access_token;
-		$params["media_id"] = $media_id;
+		$access_token = $this->access_token;
+		$url = "http://file.api.weixin.qq.com/cgi-bin/media/get?access_token={$access_token}&media_id={$media_id}";
 
-		$
-		$resp = self::_check_resp_cb_without_errcode($resp, 'get_media');
+		$resp = $this->_get_remote_file($url, "upload/", $media_id);
 
 		return $resp;
 	}
