@@ -20,7 +20,7 @@ $sdk = new WxSDK('appid', 'secret');
 // var_dump($resp);
 
 // 移动用户分组
-// $resp = $sdk->update_group_of_user("omN7ljgRDof7IaHfmudQdhoN9qMQ", 116);
+// $resp = $sdk->update_group_of_user("omN7ljgRDof7IaHfmudQdhoN9qMQ-", 116);
 // var_dump($resp);
 
 // 获取用户基本信息
@@ -74,9 +74,9 @@ $sdk = new WxSDK('appid', 'secret');
 // var_dump($resp);
 
 // 下载媒体文件
-// $resp = $sdk->get_media("jmpBeA3AnEcKE0n8cd8ziYf2OUDh4xxw56tzeik-iJyGJOeTbHuzx0R7YLim7GMj");
+// $media_id = "jmpBeA3AnEcKE0n8cd8ziYf2OUDh4xxw56tzeik-iJyGJOeTbHuzx0R7YLim7GMj";
+// $resp = $sdk->get_media($media_id, "upload");
 // var_dump($resp);
-
 
 // 创建自定义菜单
 // $resp = $sdk->create_menu(

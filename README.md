@@ -37,10 +37,12 @@ $resp = $sdk->upload_media($absolute_file_path, $type);
 ```php
 /**
  * 公众号可调用本接口来获取多媒体文件。请注意，调用该接口需http协议。
+ * 下载得到的文件将保存在参数指定的目录中，如果目录不存在将被创建
  *
  * @param   media_id            通过上传多媒体文件，得到的id
+ * @param   dir                 下载文件的存放目录的相对路径
  */
- $resp = $sdk->get_media($media_id);
+ $resp = $sdk->get_media($media_id, $dir);
  /** 
  *  调用成功返回结果：
  *  $resp => true
@@ -364,6 +366,83 @@ $resp = $sdk->get_user_list();
  *              1 => string omN7ljkj3bk0VJ03UxQBkLmNIX-U
  *              ...
  *          )
+ *      )
+ *  )
+ */
+```
+
+## 网页授权获取用户基本信息
+### 通过code换取网页授权access_token
+```php
+/**
+ * 这里通过code换取的网页授权access_token,与基础支持中的access_token不同。
+ * 公众号可通过下述接口来获取网页授权access_token。
+ * 如果网页授权的作用域为snsapi_base，则本步骤中获取到网页授权access_token的同时，
+ * 也获取到了openid，snsapi_base式的网页授权流程即到此为止。
+ *
+ * @param   code                第一步用户同意授权后获取的code参数
+ *
+ * @return  resp                包含OAuth_access_token信息的数组，详细结构见下方示例：
+ */
+$resp = $sdk->get_OAuth_access_token($code);
+/** 
+ *  调用成功返回结果：
+ *  $resp => Array ( 
+ *      'access_token' => string ACCESS_TOKEN       // 网页授权接口调用凭证。注意：此access_token与基础支持的access_token不同
+ *      'expires_in' => int 7200                    // access_token接口调用凭证超时时间，单位（秒）
+ *      'refresh_token' => string REFRESH_TOKEN     // 用户刷新access_token
+ *      'openid' => string OPENID                   // 用户唯一标识，请注意，在未关注公众号时，用户访问公众号的网页，也会产生一个用户和公众号唯一的OpenID
+ *      'scope' => string SCOPE                     // 用户授权的作用域，使用逗号（,）分隔
+ *  )
+ */
+```
+### 刷新access_token
+```php
+/**
+ * 通过此接口可以获取刷新OAuth_access_token（如果需要）。由于access_token拥有较短的有效期，
+ * 当access_token超时后，可以使用refresh_token进行刷新，
+ * refresh_token拥有较长的有效期（7天、30天、60天、90天），
+ * 当refresh_token失效的后，需要用户重新授权。
+ *
+ * @param   $refresh_token      第二步中通过access_token和code获取到的refresh_token参数
+ *
+ * @return  resp                包含OAuth_access_token信息的数组，详细结构见下方示例：
+ */
+$resp = $sdk->refresh_OAuth_access_token($refresh_token);
+/** 
+ *  调用成功返回结果：
+ *  $resp => Array ( 
+ *      'access_token' => string ACCESS_TOKEN       // 网页授权接口调用凭证。注意：此access_token与基础支持的access_token不同
+ *      'expires_in' => int 7200                    // access_token接口调用凭证超时时间，单位（秒）
+ *      'refresh_token' => string REFRESH_TOKEN     // 用户刷新access_token
+ *      'openid' => string OPENID                   // 用户唯一标识，请注意，在未关注公众号时，用户访问公众号的网页，也会产生一个用户和公众号唯一的OpenID
+ *      'scope' => string SCOPE                     // 用户授权的作用域，使用逗号（,）分隔
+ *  )
+ */
+```
+### 拉取用户信息
+```php
+/**
+ * 通过此接口可以拉取用户信息(需scope为 snsapi_userinfo)
+ *
+ * @param   $openid             用户的唯一标识
+ *
+ * @return  resp                包含用户详细身份信息的数组，详细结构见下方示例
+ */
+$resp = $sdk->get_snsapi_userinfo($openid);
+/** 
+ *  调用成功返回结果：
+ *  $resp => Array ( 
+ *      'openid' => string OPENID                   // 用户唯一标识
+ *      'nickname' => string NICKNAME               // 用户昵称
+ *      'sex' => string "1"                         // 用户的性别，值为1时是男性，值为2时是女性，值为0时是未知
+ *      'province' => string PROVINCE               // 用户个人资料填写的省份
+ *      'city' => string CITY                       // 普通用户个人资料填写的城市
+ *      'country' => string COUNTRY                 // 国家，如中国为CN
+ *      'headimgurl' => string URL                  // 用户头像，最后一个数值代表正方形头像大小（有0、46、64、96、132数值可选，0代表640*640正方形头像），用户没有头像时该项为空
+ *      'privilege' =>  array=> (                   // 用户特权信息，json 数组，如微信沃卡用户为（chinaunicom）
+ *          "PRIVILEGE1", 
+ *          "PRIVILEGE2"
  *      )
  *  )
  */

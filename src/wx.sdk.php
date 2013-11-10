@@ -167,6 +167,7 @@ class HTTP_Helper {
  * @author raphealguo cyrilzhao
  */
 class WxSDK {
+	private $OAuth_access_token = null;
 	private $access_token = null;
 	private $expires_in = 0;
 	private $secret = '';
@@ -389,11 +390,11 @@ class WxSDK {
 	}  
 
 	// 下载多媒体文件
-	public function get_media($media_id) {
+	public function get_media($media_id, $dir) {
 		$access_token = $this->access_token;
 		$url = "http://file.api.weixin.qq.com/cgi-bin/media/get?access_token={$access_token}&media_id={$media_id}";
 
-		$resp = $this->_get_remote_file($url, "upload/", $media_id);
+		$resp = $this->_get_remote_file($url, $dir, $media_id);
 
 		return $resp;
 	}
@@ -656,8 +657,56 @@ class WxSDK {
 		return $resp;
 	}
 
+	// 网页授权获取用户基本信息
+	// 通过code换取网页授权access_token
+	public function get_OAuth_access_token($code) {
+		$params = array();
+		$params["code"] = $code;
+		$params["appid"] = $this->appid;
+		$params["secret"] = $this->secret;
+		$params["grant_type"] = "authorization_code";
+
+		$http_helper = new HTTP_Helper();
+		$url = "https://api.weixin.qq.com/sns/oauth2/access_token"；
+		$resp = $http_helper->http_send($url, "GET", $params);
+		$resp = json_decode($resp, true);
+		$resp = $this->_check_resp_cb_without_errcode($resp, "get_OAuth_access_token");
+
+		return $resp;
+	}
+	// 刷新OAuth_access_token
+	public function refresh_OAuth_access_token($refresh_token) {
+		$params = array();
+		$params["appid"] = $this->appid;
+		$params["grant_type"] = "refresh_token";
+		$params["refresh_token"] = $refresh_token;
+
+		$http_helper = new HTTP_Helper();
+		$url = "https://api.weixin.qq.com/sns/oauth2/refresh_token"；
+		$resp = $http_helper->http_send($url, "GET", $params);
+		$resp = json_decode($resp, true);
+		$resp = $this->_check_resp_cb_without_errcode($resp, "refresh_OAuth_access_token");
+
+		return $resp;
+	}
+	// 拉取用户信息(需scope为 snsapi_userinfo)，使用https协议
+	public function get_snsapi_userinfo($openid) {
+		$params = array();
+		$params["openid"] = $openid;
+		$params["access_token"] = $this->access_token;
+
+		$http_helper = new HTTP_Helper();
+		$url = "https://api.weixin.qq.com/sns/oauth2/userinfo"；
+		$resp = $http_helper->http_send($url, "GET", $params);
+		$resp = json_decode($resp, true);
+		$resp = $this->_check_resp_cb_without_errcode($resp, "get_snsapi_userinfo");
+
+		return $resp;
+	}
+	// 网页授权获取用户基本信息 end
+
 	// 创建自定义菜单
-	public function create_menu($menu_arr){
+	public function create_menu($menu_arr) {
 		$params = array("button" => array());
 
 		foreach ($menu_arr as $key => $value) {
@@ -684,17 +733,17 @@ class WxSDK {
 	}
 
 	// 删除自定义菜单
-	public function delete_menu(){
+	public function delete_menu() {
 		$access_token = $this->access_token;
 		if (!$access_token){
 			throw new WxSDKException("access_token null");
 		}
-		$resp = $this->get("menu/delete", array("access_token"=>$access_token));
+		$resp = $this->get("menu/delete", array("access_token" => $access_token));
 		return self::_check_resp_cb($resp, "delete_menu failed.");
 	}
 
 	// 获取自定义菜单
-	public function get_menu(){
+	public function get_menu() {
 		$access_token = $this->access_token;
 		if (!$access_token){
 			throw new WxSDKException("access_token null");
