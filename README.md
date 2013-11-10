@@ -14,6 +14,7 @@ define('TOKEN', 'test');
 $sdk = new WxSDK($appid, $secret);
 ```
 
+## 基础支持
 ### 上传媒体文件
 ```php
 /**
@@ -49,6 +50,7 @@ $resp = $sdk->upload_media($absolute_file_path, $type);
  */
 ```
 
+## 发送消息
 ### 被动回复文字消息
 ```php
 /**
@@ -231,6 +233,7 @@ $sdk->send_custom_music_message($touser_openid, $music_title, $music_url, $descr
 $sdk->send_custom_news_message($articlesArray);
 ```
 
+## 用户管理
 ### 查询分组
 ```php
 /**
@@ -452,6 +455,7 @@ $resp = $sdk->get_snsapi_userinfo($openid);
  */
 ```
 
+## 自定义菜单
 ### 创建自定义菜单
 ```php
 /**
@@ -573,6 +577,7 @@ $resp = $sdk->get_menu();
  */
 ```
 
+## 推广支持
 ### 获取带参数永久二维码图片的ticket
 ```php
 /**
