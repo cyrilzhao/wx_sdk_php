@@ -391,8 +391,8 @@ $resp = $sdk->get_OAuth_access_token($code);
  *      'access_token' => string ACCESS_TOKEN       // 网页授权接口调用凭证。此access_token与基础支持的access_token不同
  *      'expires_in' => int 7200                    // access_token接口调用凭证超时时间，单位（秒）
  *      'refresh_token' => string REFRESH_TOKEN     // 用户刷新access_token
- *      'openid' => string OPENID                   /* 用户唯一标识，请注意，在未关注公众号时，用户访问公众号的网页，
- *                                                     也会产生一个用户和公众号唯一的OpenID */
+ *      'openid' => string OPENID                   // 用户唯一标识，请注意，在未关注公众号时，用户访问公众号的网页，
+ *                                                     也会产生一个用户和公众号唯一的OpenID 
  *      'scope' => string SCOPE                     // 用户授权的作用域，使用逗号（,）分隔
  *  )
  */
@@ -416,8 +416,8 @@ $resp = $sdk->refresh_OAuth_access_token($refresh_token);
  *      'access_token' => string ACCESS_TOKEN       // 网页授权接口调用凭证。此access_token与基础支持的access_token不同
  *      'expires_in' => int 7200                    // access_token接口调用凭证超时时间，单位（秒）
  *      'refresh_token' => string REFRESH_TOKEN     // 用户刷新access_token
- *      'openid' => string OPENID                   /* 用户唯一标识，请注意，在未关注公众号时，用户访问公众号的网页，
- *                                                     也会产生一个用户和公众号唯一的OpenID */
+ *      'openid' => string OPENID                   // 用户唯一标识，请注意，在未关注公众号时，用户访问公众号的网页，
+ *                                                     也会产生一个用户和公众号唯一的OpenID
  *      'scope' => string SCOPE                     // 用户授权的作用域，使用逗号（,）分隔
  *  )
  */
@@ -441,9 +441,9 @@ $resp = $sdk->get_snsapi_userinfo($openid);
  *      'province' => string PROVINCE               // 用户个人资料填写的省份
  *      'city' => string CITY                       // 普通用户个人资料填写的城市
  *      'country' => string COUNTRY                 // 国家，如中国为CN
- *      'headimgurl' => string URL                  /* 用户头像，最后一个数值代表正方形头像大小
+ *      'headimgurl' => string URL                  // 用户头像，最后一个数值代表正方形头像大小
  *                                                    （有0、46、64、96、132数值可选，0代表640*640正方形头像），
- *                                                     用户没有头像时该项为空 */
+ *                                                     用户没有头像时该项为空 
  *      'privilege' =>  array=> (                   // 用户特权信息，json 数组，如微信沃卡用户为（chinaunicom）
  *          "PRIVILEGE1", 
  *          "PRIVILEGE2"
