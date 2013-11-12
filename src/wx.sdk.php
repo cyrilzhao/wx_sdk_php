@@ -682,7 +682,7 @@ class WxSDK {
 		$params["refresh_token"] = $refresh_token;
 
 		$http_helper = new HTTP_Helper();
-		$url = "https://api.weixin.qq.com/sns/oauth2/refresh_token"；
+		$url = "https://api.weixin.qq.com/sns/oauth2/refresh_token";
 		$resp = $http_helper->http_send($url, "GET", $params);
 		$resp = json_decode($resp, true);
 		$resp = $this->_check_resp_cb_without_errcode($resp, "refresh_OAuth_access_token");
@@ -696,7 +696,7 @@ class WxSDK {
 		$params["access_token"] = $this->access_token;
 
 		$http_helper = new HTTP_Helper();
-		$url = "https://api.weixin.qq.com/sns/oauth2/userinfo"；
+		$url = "https://api.weixin.qq.com/sns/oauth2/userinfo";
 		$resp = $http_helper->http_send($url, "GET", $params);
 		$resp = json_decode($resp, true);
 		$resp = $this->_check_resp_cb_without_errcode($resp, "get_snsapi_userinfo");

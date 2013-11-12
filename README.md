@@ -7,10 +7,15 @@ mp.weixin.qq.com/wiki
 ========
 ##### 注意：所有接口调用失败均返回false
 
+### 与公众平台校验token参数
+```php
+define('TOKEN', 'hello');	
+WxSDK::valid_token(TOKEN);
+```
+
 ### 实例化SDK对象
 ```php
 // 这里的TOKEN由用户自行决定并填写，且应与在公众平台开发者页面填写的token保持一致
-define('TOKEN', 'test');	
 $sdk = new WxSDK($appid, $secret);
 ```
 
