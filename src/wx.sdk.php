@@ -667,7 +667,7 @@ class WxSDK {
 		$params["grant_type"] = "authorization_code";
 
 		$http_helper = new HTTP_Helper();
-		$url = "https://api.weixin.qq.com/sns/oauth2/access_token"；
+		$url = "https://api.weixin.qq.com/sns/oauth2/access_token";
 		$resp = $http_helper->http_send($url, "GET", $params);
 		$resp = json_decode($resp, true);
 		$resp = $this->_check_resp_cb_without_errcode($resp, "get_OAuth_access_token");
