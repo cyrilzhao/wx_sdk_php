@@ -400,10 +400,10 @@ class WxSDK {
 	}
 
 	// 被动回复文字消息
-	public function send_callback_text_message($touser_openid, $fromuser_openid, $content) {
+	public function send_callback_text_message($fromuser_name, $touser_openid, $content) {
 		$params = array();
 		$params["ToUserName"] = $touser_openid;
-		$params["FromUserName"] = $fromuser_openid;
+		$params["FromUserName"] = $fromuser_name;
 		$params["CreateTime"] = strtotime("now");
 		$params["MsgType"] = "text";
 		$params["Content"] = $content;
@@ -413,10 +413,10 @@ class WxSDK {
 	}
 
 	// 被动回复图片消息
-	public function send_callback_image_message($touser_openid, $fromuser_openid, $media_id) {
+	public function send_callback_image_message($fromuser_name, $touser_openid, $media_id) {
 		$params = array();
 		$params["ToUserName"] = $touser_openid;
-		$params["FromUserName"] = $fromuser_openid;
+		$params["FromUserName"] = $fromuser_name;
 		$params["CreateTime"] = strtotime("now");
 		$params["MsgType"] = "image";
 		$params["Image"] = array("MediaId" => $media_id);
@@ -426,10 +426,10 @@ class WxSDK {
 	}
 
 	// 被动回复语音消息
-	public function send_callback_voice_message($touser_openid, $fromuser_openid, $media_id) {
+	public function send_callback_voice_message($fromuser_name, $touser_openid, $media_id) {
 		$params = array();
 		$params["ToUserName"] = $touser_openid;
-		$params["FromUserName"] = $fromuser_openid;
+		$params["FromUserName"] = $fromuser_name;
 		$params["CreateTime"] = strtotime("now");
 		$params["MsgType"] = "voice";
 		$params["Voice"] = array("MediaId" => $media_id);
@@ -439,10 +439,10 @@ class WxSDK {
 	}
 
 	// 被动回复视频消息
-	public function send_callback_video_message($touser_openid, $fromuser_openid, $media_id, $thumb_media_id) {
+	public function send_callback_video_message($fromuser_name, $touser_openid, $media_id, $thumb_media_id) {
 		$params = array();
 		$params["ToUserName"] = $touser_openid;
-		$params["FromUserName"] = $fromuser_openid;
+		$params["FromUserName"] = $fromuser_name;
 		$params["CreateTime"] = strtotime("now");
 		$params["MsgType"] = "video";
 		$params["Video"] = array(
@@ -455,10 +455,10 @@ class WxSDK {
 	}
 
 	// 被动回复音乐消息
-	public function send_callback_music_message($touser_openid, $fromuser_openid, $music_title, $description, $music_url, $hqmusicurl, $thumb_media_id) {
+	public function send_callback_music_message($fromuser_name, $touser_openid, $music_title, $description, $music_url, $hqmusicurl, $thumb_media_id) {
 		$params = array();
 		$params["ToUserName"] = $touser_openid;
-		$params["FromUserName"] = $fromuser_openid;
+		$params["FromUserName"] = $fromuser_name;
 		$params["CreateTime"] = strtotime("now");
 		$params["MsgType"] = "music";
 		$params["Music"] = array(
@@ -474,10 +474,10 @@ class WxSDK {
 	}
 
 	// 被动回复图文消息
-	public function send_callback_news_message($touser_openid, $fromuser_openid, $articleCount, $articles) {
+	public function send_callback_news_message($fromuser_name, $touser_openid, $articleCount, $articles) {
 		$params = array();
 		$params["ToUserName"] = $touser_openid;
-		$params["FromUserName"] = $fromuser_openid;
+		$params["FromUserName"] = $fromuser_name;
 		$params["CreateTime"] = strtotime("now");
 		$params["MsgType"] = "news";
 		$params["ArticleCount"] = $articleCount;

@@ -61,11 +61,11 @@ $resp = $sdk->upload_media($absolute_file_path, $type);
 /**
  * 通过此接口可以被动向用户回复文本消息
  *
- * @param 	fromuser_openid		开发者微信号
+ * @param 	fromuser_name		开发者微信号
  * @param 	touser_openid		接收方帐号（收到的OpenID）
  * @param 	content 			回复的消息内容（换行：在content中能够换行，微信客户端就支持换行显示）
  */
-$sdk->send_callback_text_message($fromuser_openid, $touser_openid, $content);
+$sdk->send_callback_text_message($fromuser_name, $touser_openid, $content);
 ```
 
 ### 被动回复图片消息
@@ -73,11 +73,11 @@ $sdk->send_callback_text_message($fromuser_openid, $touser_openid, $content);
 /**
  * 通过此接口可以被动向用户回复图片消息
  *
- * @param 	fromuser_openid		开发者微信号
+ * @param 	fromuser_name		开发者微信号
  * @param 	touser_openid		接收方帐号（收到的OpenID）
  * @param 	media_id 			通过上传多媒体文件，得到的id
  */
-$sdk->send_callback_image_message($fromuser_openid, $touser_openid, $media_id);
+$sdk->send_callback_image_message($fromuser_name, $touser_openid, $media_id);
 ```
 
 ### 被动回复语音消息
@@ -85,11 +85,11 @@ $sdk->send_callback_image_message($fromuser_openid, $touser_openid, $media_id);
 /**
  * 通过此接口可以被动向用户回复语音消息
  *
- * @param 	fromuser_openid		开发者微信号
+ * @param 	fromuser_name		开发者微信号
  * @param 	touser_openid		接收方帐号（收到的OpenID）
  * @param 	media_id 			通过上传多媒体文件，得到的id
  */
-$sdk->send_callback_voice_message($touser_openid, $fromuser_openid, $media_id);
+$sdk->send_callback_voice_message($fromuser_name, $touser_openid, $media_id);
 ```
 
 ### 被动回复视频消息
@@ -97,12 +97,12 @@ $sdk->send_callback_voice_message($touser_openid, $fromuser_openid, $media_id);
 /**
  * 通过此接口可以被动向用户回复视频消息
  *
- * @param 	fromuser_openid		开发者微信号
+ * @param 	fromuser_name		开发者微信号
  * @param 	touser_openid		接收方帐号（收到的OpenID）
  * @param 	media_id 			通过上传多媒体文件，得到的id
  * @param 	thumb_media_id 		缩略图的媒体id，通过上传多媒体文件，得到的id
  */
-$sdk->send_callback_video_message($touser_openid, $fromuser_openid, $media_id, $thumb_media_id);
+$sdk->send_callback_video_message($fromuser_name, $touser_openid, $media_id, $thumb_media_id);
 ```
 
 ### 被动回复音乐消息
@@ -110,7 +110,7 @@ $sdk->send_callback_video_message($touser_openid, $fromuser_openid, $media_id, $
 /**
  * 通过此接口可以被动向用户回复音乐消息
  *
- * @param 	fromuser_openid		开发者微信号
+ * @param 	fromuser_name		开发者微信号
  * @param 	touser_openid		接收方帐号（收到的OpenID）
  * @param 	music_title 		音乐标题
  * @param 	description 		音乐描述
@@ -118,7 +118,7 @@ $sdk->send_callback_video_message($touser_openid, $fromuser_openid, $media_id, $
  * @param 	hqmusicurl 			高质量音乐链接，WIFI环境优先使用该链接播放音乐
  * @param 	thumb_media_id 		缩略图的媒体id，通过上传多媒体文件，得到的id
  */
-$sdk->send_callback_music_message($touser_openid, $fromuser_openid, $music_title, $description, $music_url, $hqmusicurl, $thumb_media_id);
+$sdk->send_callback_music_message($fromuser_name, $touser_openid, $music_title, $description, $music_url, $hqmusicurl, $thumb_media_id);
 ```
 
 ### 被动回复图文消息
@@ -143,12 +143,12 @@ $sdk->send_callback_music_message($touser_openid, $fromuser_openid, $music_title
 /**
  * 通过此接口可以被动向用户回复图文消息
  *
- * @param 	fromuser_openid		开发者微信号
+ * @param 	fromuser_name		开发者微信号
  * @param 	touser_openid		接收方帐号（收到的OpenID）
  * @param 	articleCount 		图文消息个数，限制为10条以内
  * @param 	articles 			保存图文消息的数组，详细结构见上方示例
  */
-$sdk->send_callback_news_message($touser_openid, $fromuser_openid, $articleCount, $articles);
+$sdk->send_callback_news_message($fromuser_name, $touser_openid, $articleCount, $articles);
 ```
 
 ### 发送客服文字消息
