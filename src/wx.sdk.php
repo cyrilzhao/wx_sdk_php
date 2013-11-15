@@ -309,46 +309,29 @@ class WxSDK {
 		return $resp;
 	}
 
+	private function _upload_file($url, $params) {
+		$http_helper = new HTTP_Helper();
+		$resp = $http_helper->http_send($url, "POST", $params);
+
+		$resp = json_decode($resp, true);
+		if($resp && !empty($resp)) {
+			$resp = $this->_check_resp_cb_without_errcode($resp, 'get_media');
+		}
+
+		return $resp;
+	}
+
 	// 上传多媒体文件
 	public function upload_media($absolute_file_path, $type) {
 		$params = array();
 		$params["file"] = "@" . $absolute_file_path;
 
 		$access_token = $this->access_token;
-		$resp = $this->post("media/upload?access_token={$access_token}&type={$type}", $params);
+		$url = "http://file.api.weixin.qq.com/cgi-bin/media/upload?access_token={$access_token}&type={$type}";
+		$resp = $this->_upload_file($url, $params);
 
 		return $resp;
 	}
-
-	// 下载远程文件并保存到本地
-	// private function _get_remote_file($url, $folder = ".") { 
-	// 	$isSuccess = true;
-	//     set_time_limit (24 * 60 * 60); // 设置超时时间 
-	//     $destination_folder = $folder . '/'; // 文件下载保存目录，默认为当前文件目录 
-	//     if (!is_dir($destination_folder)) { // 判断目录是否存在 
-	//         _mkdirs($destination_folder); // 如果没有就建立目录 
-	//     }  
-	//     $newfname = $destination_folder . basename($url); // 取得文件的名称 
-	//     $file = fopen ($url, "rb"); // 远程下载文件，二进制模式 
-	//     if ($file) { // 如果下载成功 
-	//         $newf = fopen ($newfname, "wb"); // 打开本地文件准备写入
-	//         if ($newf) // 如果文件保存成功 
-	//             while (!feof($file)) { // 判断附件写入是否完整 
-	//                 fwrite($newf, fread($file, 1024 * 8), 1024 * 8); // 没有写完就继续 
-	//         } else {
-	//         	$isSuccess = false;
-	//         }  
-	//     } else {
-	//     	$isSuccess = false;
-	//     }  
-	//     if ($file) { 
-	//         fclose($file); // 关闭远程文件 
-	//     }  
-	//     if ($newf) { 
-	//         fclose($newf); // 关闭本地文件 
-	//     }  
-	//     return $isSuccess; 
-	// }  
 
 	private function _get_remote_file($url, $folder = ".", $media_id)
 	{

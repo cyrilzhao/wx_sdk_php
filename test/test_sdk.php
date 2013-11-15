@@ -46,7 +46,6 @@ $sdk = new WxSDK('appid', 'secret');
 // 					"<Precision>119.385040</Precision>".
 // 				"</xml>";
 // $xml = $sdk->parseRespXML($xmlString);
-// print_r($xml);
 
 // 生成xml响应包
 // $xmlString = $sdk->getRespXML(
@@ -70,11 +69,11 @@ $sdk = new WxSDK('appid', 'secret');
 // print_r($xml->FromUserName);
 
 // 上传媒体文件
-// $resp = $sdk->upload_media("D:/wamp/www/wx_sdk/test/1.jpg", "image");
-// var_dump($resp);
+$resp = $sdk->upload_media("D:/wamp/www/wx_sdk_php/test/1.jpg", "image");
+var_dump($resp);
 
 // 下载媒体文件
-// $media_id = "jmpBeA3AnEcKE0n8cd8ziYf2OUDh4xxw56tzeik-iJyGJOeTbHuzx0R7YLim7GMj";
+// $media_id = "hWM79piwGl3pvLBvyLZ1PDmz8i0-iBNMkwIkt3cY675k_F868ulhynQ4tboBfIii";
 // $resp = $sdk->get_media($media_id, "upload");
 // var_dump($resp);
 
@@ -157,3 +156,5 @@ $sdk = new WxSDK('appid', 'secret');
 // 	)
 // );
 // $sdk->send_callback_news_message("cyrilzhao", "zhaojian", 2, $articles);
+
+
