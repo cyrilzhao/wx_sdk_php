@@ -1,5 +1,7 @@
 <?php
 
+define('OS_WIN', !strncasecmp(PHP_OS, 'win', 3)); // 判断是否为windows系统
+
 class WxSDKException extends Exception {
 	public function __construct($msg = 'WxSDKException'){
 		$this->msg = $msg;
@@ -159,7 +161,6 @@ class HTTP_Helper {
 		return $resp;
 	}
 }
-
 
 /**
  * 微信公众平台第三方接口SDK
@@ -323,6 +324,9 @@ class WxSDK {
 
 	// 上传多媒体文件
 	public function upload_media($absolute_file_path, $type) {
+		if(OS_WIN) { // windows系统的文件名以gb2312进行编码，因此这里要做一次转码
+			$absolute_file_path = iconv('utf-8', 'gb2312', $absolute_file_path);
+		}
 		$params = array();
 		$params["file"] = "@" . $absolute_file_path;
 
