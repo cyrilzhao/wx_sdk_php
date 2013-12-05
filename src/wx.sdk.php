@@ -370,7 +370,7 @@ class WxSDK {
 	// 循环创建所需的目录
 	private function _mkdirs($path , $mode = "0755") { 
 	    if (!is_dir($path)) { // 判断目录是否存在 
-	        _mkdirs(dirname($path), $mode); // 循环建立目录   
+	        $this->_mkdirs(dirname($path), $mode); // 循环建立目录   
 	        mkdir($path, $mode); // 建立目录 
 	    }  
 	    return true; 
